@@ -1,0 +1,11 @@
+PollyReports.py
+Copyright (c) 2012 Chris Gonnerman
+All Rights Reserved
+See the LICENSE file for more information.
+
+------------------------------------------------------------------------------
+
+PollyReports.py provides a set of classes for database report writing.  It
+assumes that you are using Reportlab to do PDF generation, but can work with
+any "canvas-like" object as desired.
+
