@@ -61,15 +61,19 @@ class Renderer:
         # nearest integer point.
         return height + max(1, int(height * 0.05 + 0.5))
 
-    def __init__(self, pos, font, text):
+    def __init__(self, pos, font, text, right):
         self.pos = pos
         self.font = font
         self.text = text
+        self.right = right
         self.height = self._adjust_font_height(font[1])
 
     def render(self, offset, canvas):
         canvas.setFont(*self.font)
-        canvas.drawString(self.pos[0], (-1) * (self.pos[1]+offset), self.text)
+        if self.right:
+            canvas.drawRightString(self.pos[0], (-1) * (self.pos[1]+offset), self.text)
+        else:
+            canvas.drawString(self.pos[0], (-1) * (self.pos[1]+offset), self.text)
 
 
 class Element:
@@ -81,33 +85,38 @@ class Element:
     # all three should not be submitted at the same time,
     #   but if they are, getvalue overrides key overrides text.
 
-    def __init__(self, pos, font, text = None, key = None, getvalue = None):
+    def __init__(self, pos, font, text = None, key = None, getvalue = None, right = 0):
         self.text = text
         self.key = key
-        self.getvalue = getvalue
+        self._getvalue = getvalue
         self.pos = pos
         self.font = font
+        self._format = str
+        self.right = right
 
     def gettext(self, row):
-        if self.getvalue:
-            return str(self.getvalue(row))
+        return self._format(self.getvalue(row))
+
+    def getvalue(self, row):
+        if self._getvalue:
+            return self._getvalue(row)
         if self.key:
-            return str(row[self.key])
+            return row[self.key]
         if self.text:
-            return str(self.text)
+            return self.text
         return "???"
 
     # generating an element returns a Renderer object
     # which can be used to print the element out.
 
     def generate(self, row):
-        return Renderer(self.pos, self.font, self.gettext(row))
+        return Renderer(self.pos, self.font, self.gettext(row), self.right)
 
 
 class Band:
 
-    def __init__(self):
-        self.elements = []
+    def __init__(self, elements = None):
+        self.elements = elements
 
     # generating a band creates a list of Renderer objects.
     # the first element of the list is a single integer
@@ -127,28 +136,45 @@ class Report:
 
     def __init__(self, datasource):
         self.datasource = datasource
-        self.detailband = None
         self.pagesize = None
         self.topmargin = 36
         self.bottommargin = 36
 
-    def _newpage(self, canvas):
-        canvas.showPage()
+        # bands
+        self.detailband = None
+        self.pageheader = None
+        self.pagefooter = None
+
+    def newpage(self, canvas, row, pagenumber):
+        if pagenumber:
+            canvas.showPage()
+        self.endofpage = self.pagesize[1] - self.bottommargin
         canvas.translate(0, self.pagesize[1])
+        self.current_offset = self.topmargin
+        if self.pageheader:
+            elementlist = self.pageheader.generate(row)
+            for el in elementlist[1:]:
+                el.render(self.current_offset, canvas)
+            self.current_offset += elementlist[0]
+        if self.pagefooter:
+            elementlist = self.pagefooter.generate(row)
+            self.endofpage = self.pagesize[1] - self.bottommargin - elementlist[0]
+            for el in elementlist[1:]:
+                el.render(self.endofpage, canvas)
+        return pagenumber + 1
 
     def generate(self, canvas):
         self.pagesize = (int(canvas._pagesize[0]), int(canvas._pagesize[1]))
-        canvas.translate(0, self.pagesize[1])
-        pagenumber = 1
-        current_offset = self.topmargin
+        self.current_offset = self.pagesize[1]
+        pagenumber = 0
+        self.endofpage = self.pagesize[1] - self.bottommargin
         for row in self.datasource:
             elementlist = self.detailband.generate(row)
-            if elementlist[0] >= (self.pagesize[1] - current_offset - self.bottommargin):
-                self._newpage(canvas)
-                current_offset = self.topmargin
+            if (self.current_offset + elementlist[0]) >= self.endofpage:
+                pagenumber = self.newpage(canvas, row, pagenumber)
             for el in elementlist[1:]:
-                el.render(current_offset, canvas)
-            current_offset += elementlist[0]
+                el.render(self.current_offset, canvas)
+            self.current_offset += elementlist[0]
         canvas.showPage()
 
 
@@ -158,59 +184,20 @@ if __name__ == "__main__":
 
     data = [
         { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-        { "name": "Jane Doe", "phone": "555-2121", },
-    ]
+        { "name": "Jane Doe", "phone": "555-555-2121", },
+    ] * 20
 
     rpt = Report(data)
-    rpt.detailband = Band()
-    rpt.detailband.elements = [
+    rpt.detailband = Band([
         Element((36, 0), ("Helvetica", 20), key = "name"),
-        Element((360, 0), ("Helvetica", 20), key = "phone"),
-    ]
+        Element((360, 0), ("Helvetica", 20), key = "phone", right = 1),
+    ])
+    rpt.pageheader = Band([
+        Element((36, 0), ("Times-Bold", 20), text = "Page Header"),
+    ])
+    rpt.pagefooter = Band([
+        Element((72*8, 0), ("Times-Bold", 20), text = "Page Footer", right = 1),
+    ])
 
     canvas = Canvas("test.pdf", rpt.pagesize)
     rpt.generate(canvas)
