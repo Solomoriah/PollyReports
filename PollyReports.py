@@ -206,11 +206,7 @@ class Report:
 if __name__ == "__main__":
 
     from reportlab.pdfgen.canvas import Canvas
-
-    data = [
-        { "name": "Joe Blow", "phone": "555-1212", },
-        { "name": "Jane Doe", "phone": "555-555-2121", },
-    ] * 20
+    from testdata import data
 
     rpt = Report(data)
     rpt.detailband = Band([
