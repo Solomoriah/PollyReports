@@ -93,6 +93,7 @@ class Element:
         self.font = font
         self._format = str
         self.right = right
+        self.summary = 0 # used in SumElement, below
 
     def gettext(self, row):
         return self._format(self.getvalue(row))
@@ -111,6 +112,17 @@ class Element:
 
     def generate(self, row):
         return Renderer(self.pos, self.font, self.gettext(row), self.right)
+
+
+class SumElement(Element):
+
+    def getvalue(self, row):
+        rc = self.summary
+        self.summary = 0
+        return rc
+
+    def summarize(self, row):
+        self.summary += Element.getvalue(self, row)
 
 
 class Rule:
@@ -156,6 +168,14 @@ class Band:
             elementlist.append(el)
         return elementlist
 
+    # summarize() is only used for total bands, i.e. group and
+    # report footers.
+
+    def summarize(self, row):
+        for element in self.elements:
+            if hasattr(element, "summarize"):
+                element.summarize(row)
+
 
 class Report:
 
@@ -169,6 +189,7 @@ class Report:
         self.detailband = None
         self.pageheader = None
         self.pagefooter = None
+        self.reportfooter = None
 
     def newpage(self, canvas, row, pagenumber):
         if pagenumber:
@@ -200,6 +221,15 @@ class Report:
             for el in elementlist[1:]:
                 el.render(self.current_offset, canvas)
             self.current_offset += elementlist[0]
+            if self.reportfooter:
+                self.reportfooter.summarize(row)
+        if self.reportfooter:
+            elementlist = self.reportfooter.generate(row)
+            if (self.current_offset + elementlist[0]) >= self.endofpage:
+                pagenumber = self.newpage(canvas, row, pagenumber)
+            for el in elementlist[1:]:
+                el.render(self.current_offset, canvas)
+            self.current_offset += elementlist[0]
         canvas.showPage()
 
 
@@ -210,15 +240,24 @@ if __name__ == "__main__":
 
     rpt = Report(data)
     rpt.detailband = Band([
-        Element((36, 0), ("Helvetica", 20), key = "name"),
-        Element((360, 0), ("Helvetica", 20), key = "phone", right = 1),
+        Element((36, 0), ("Helvetica", 12), key = "name"),
+        Element((240, 0), ("Helvetica", 12), key = "phone"),
+        Element((400, 0), ("Helvetica", 12), key = "amount", right = 1),
     ])
     rpt.pageheader = Band([
         Element((36, 0), ("Times-Bold", 20), text = "Page Header"),
+        Element((36, 24), ("Helvetica", 12), text = "Name"),
+        Element((240, 24), ("Helvetica", 12), text = "Phone"),
+        Element((400, 24), ("Helvetica", 12), text = "Amount", right = 1),
         Rule((36, 42), 7.5*72),
     ])
     rpt.pagefooter = Band([
         Element((72*8, 0), ("Times-Bold", 20), text = "Page Footer", right = 1),
+    ])
+    rpt.reportfooter = Band([
+        Rule((330, 4), 72),
+        Element((240, 4), ("Helvetica-Bold", 12), text = "Total"),
+        SumElement((400, 4), ("Helvetica", 12), key = "amount", right = 1),
     ])
 
     canvas = Canvas("test.pdf", rpt.pagesize)
