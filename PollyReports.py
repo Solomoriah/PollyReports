@@ -71,9 +71,9 @@ class Renderer:
     def render(self, offset, canvas):
         canvas.setFont(*self.font)
         if self.right:
-            canvas.drawRightString(self.pos[0], (-1) * (self.pos[1]+offset), self.text)
+            canvas.drawRightString(self.pos[0], (-1) * (self.pos[1]+offset+self.font[1]), self.text)
         else:
-            canvas.drawString(self.pos[0], (-1) * (self.pos[1]+offset), self.text)
+            canvas.drawString(self.pos[0], (-1) * (self.pos[1]+offset+self.font[1]), self.text)
 
 
 class Element:
@@ -113,6 +113,31 @@ class Element:
         return Renderer(self.pos, self.font, self.gettext(row), self.right)
 
 
+class Rule:
+
+    def __init__(self, pos, width, thickness = 1):
+        self.pos = pos
+        self.width = width
+        self.height = thickness
+
+    def gettext(self, row):
+        return "-"
+
+    def getvalue(self, row):
+        return "-"
+
+    def generate(self, row):
+        return self
+
+    def render(self, offset, canvas):
+        canvas.saveState()
+        canvas.setLineWidth(self.height)
+        canvas.setStrokeGray(0)
+        canvas.line(self.pos[0],            -1 * (self.pos[1]+offset), 
+                    self.pos[0]+self.width, -1 * (self.pos[1]+offset))
+        canvas.restoreState()
+
+
 class Band:
 
     def __init__(self, elements = None):
@@ -127,7 +152,7 @@ class Band:
         elementlist = [ 0 ]
         for element in self.elements:
             el = element.generate(row)
-            elementlist[0] = max(elementlist[0], el.height)
+            elementlist[0] = max(elementlist[0], el.height + el.pos[1])
             elementlist.append(el)
         return elementlist
 
@@ -194,6 +219,7 @@ if __name__ == "__main__":
     ])
     rpt.pageheader = Band([
         Element((36, 0), ("Times-Bold", 20), text = "Page Header"),
+        Rule((36, 42), 7.5*72),
     ])
     rpt.pagefooter = Band([
         Element((72*8, 0), ("Times-Bold", 20), text = "Page Footer", right = 1),
