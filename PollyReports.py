@@ -151,7 +151,7 @@ class Rule:
         return "-"
 
     def generate(self, row):
-        return self
+        return Rule(self.pos, self.width, self.height)
 
     def render(self, offset, canvas):
         canvas.saveState()
@@ -160,6 +160,10 @@ class Rule:
         canvas.line(self.pos[0],            -1 * (self.pos[1]+offset),
                     self.pos[0]+self.width, -1 * (self.pos[1]+offset))
         canvas.restoreState()
+
+    def applyoffset(self, offset):
+        self.pos = (self.pos[0], self.pos[1] + offset)
+        return self
 
 
 class Band:
