@@ -55,18 +55,12 @@
 
 class Renderer:
 
-    def _adjust_font_height(self, height):
-        # we want to allow about 5% leading on fonts,
-        # with a minimum of 1 point, rounded to the
-        # nearest integer point.
-        return height + max(1, int(height * 0.05 + 0.5))
-
-    def __init__(self, pos, font, text, right):
+    def __init__(self, pos, font, text, right, height):
         self.pos = pos
         self.font = font
         self.text = text
         self.right = right
-        self.height = self._adjust_font_height(font[1])
+        self.height = height
 
     def render(self, offset, canvas):
         canvas.setFont(*self.font)
@@ -85,25 +79,31 @@ class Element:
     # all three should not be submitted at the same time,
     #   but if they are, getvalue overrides key overrides text.
 
-    def __init__(self, pos, font, text = None, key = None, getvalue = None, right = 0):
+    def __init__(self, pos, font, 
+                 text = None, key = None, getvalue = None, 
+                 right = 0, format = str, leading = None):
         self.text = text
         self.key = key
         self._getvalue = getvalue
         self.pos = pos
         self.font = font
-        self._format = str
+        self._format = format
         self.right = right
+        if leading is not None:
+            self.leading = leading
+        else:
+            self.leading = max(1, int(font[1] * 0.4 + 0.5))
         self.summary = 0 # used in SumElement, below
 
     def gettext(self, row):
         return self._format(self.getvalue(row))
 
     def getvalue(self, row):
-        if self._getvalue:
+        if self._getvalue is not None:
             return self._getvalue(row)
-        if self.key:
+        if self.key is not None:
             return row[self.key]
-        if self.text:
+        if self.text is not None:
             return self.text
         return "???"
 
@@ -111,7 +111,8 @@ class Element:
     # which can be used to print the element out.
 
     def generate(self, row):
-        return Renderer(self.pos, self.font, self.gettext(row), self.right)
+        return Renderer(self.pos, self.font, self.gettext(row), self.right, 
+            self.font[1] + self.leading)
 
 
 class SumElement(Element):
@@ -152,8 +153,15 @@ class Rule:
 
 class Band:
 
-    def __init__(self, elements = None):
+    # key, getvalue and previousvalue are used only for group headers and footers
+    # newpagebefore does not apply to detail bands, page headers, or page footers, obviously
+
+    def __init__(self, elements = None, key = None, getvalue = None, newpagebefore = 0):
         self.elements = elements
+        self.key = key
+        self._getvalue = getvalue
+        self.previousvalue = None
+        self.newpagebefore = newpagebefore
 
     # generating a band creates a list of Renderer objects.
     # the first element of the list is a single integer
@@ -176,6 +184,22 @@ class Band:
             if hasattr(element, "summarize"):
                 element.summarize(row)
 
+    # these methods are used only in group headers and footers
+
+    def getvalue(self, row):
+        if self._getvalue is not None:
+            return self._getvalue(row)
+        if self.key is not None:
+            return row[self.key]
+        return 0
+
+    def ischanged(self, row):
+        pv = self.previousvalue
+        self.previousvalue = self.getvalue(row)
+        if pv is not None and pv != self.getvalue(row):
+            return 1
+        return None
+
 
 class Report:
 
@@ -190,6 +214,8 @@ class Report:
         self.pageheader = None
         self.pagefooter = None
         self.reportfooter = None
+        self.groupheaders = []
+        self.groupfooters = []
 
     def newpage(self, canvas, row, pagenumber):
         if pagenumber:
@@ -199,9 +225,7 @@ class Report:
         self.current_offset = self.topmargin
         if self.pageheader:
             elementlist = self.pageheader.generate(row)
-            for el in elementlist[1:]:
-                el.render(self.current_offset, canvas)
-            self.current_offset += elementlist[0]
+            self.current_offset += self.addtopage(canvas, elementlist)
         if self.pagefooter:
             elementlist = self.pagefooter.generate(row)
             self.endofpage = self.pagesize[1] - self.bottommargin - elementlist[0]
@@ -209,27 +233,74 @@ class Report:
                 el.render(self.endofpage, canvas)
         return pagenumber + 1
 
+    def addtopage(self, canvas, elementlist):
+        for el in elementlist[1:]:
+            el.render(self.current_offset, canvas)
+        return elementlist[0]
+
     def generate(self, canvas):
         self.pagesize = (int(canvas._pagesize[0]), int(canvas._pagesize[1]))
         self.current_offset = self.pagesize[1]
         pagenumber = 0
         self.endofpage = self.pagesize[1] - self.bottommargin
+        prevrow = None
+        firstrow = 1
+
         for row in self.datasource:
+
+            if firstrow:
+                firstrow = None
+                for band in self.groupheaders:
+                    elementlist = band.generate(row)
+                    if (self.current_offset + elementlist[0]) >= self.endofpage:
+                        pagenumber = self.newpage(canvas, row, pagenumber)
+                    self.current_offset += self.addtopage(canvas, elementlist)
+
+            firstchanged = None
+            for i in range(len(self.groupfooters)):
+                if self.groupfooters[i].ischanged(row):
+                    if firstchanged is None:
+                        firstchanged = i
+            if firstchanged is not None:
+                for i in range(firstchanged, len(self.groupfooters)):
+                    elementlist = self.groupfooters[i].generate(prevrow)
+                    if self.groupfooters[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
+                        pagenumber = self.newpage(canvas, row, pagenumber)
+                    self.current_offset += self.addtopage(canvas, elementlist)
+            for band in self.groupfooters:
+                band.summarize(row)
+
+            lastchanged = None
+            for i in range(len(self.groupheaders)):
+                if self.groupheaders[i].ischanged(row):
+                    lastchanged = i
+            if lastchanged is not None:
+                for i in range(lastchanged+1):
+                    elementlist = self.groupheaders[i].generate(row)
+                    if self.groupheaders[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
+                        pagenumber = self.newpage(canvas, row, pagenumber)
+                    self.current_offset += self.addtopage(canvas, elementlist)
+
             elementlist = self.detailband.generate(row)
             if (self.current_offset + elementlist[0]) >= self.endofpage:
                 pagenumber = self.newpage(canvas, row, pagenumber)
-            for el in elementlist[1:]:
-                el.render(self.current_offset, canvas)
-            self.current_offset += elementlist[0]
+            self.current_offset += self.addtopage(canvas, elementlist)
             if self.reportfooter:
                 self.reportfooter.summarize(row)
+            prevrow = row
+
+        for band in self.groupfooters:
+            elementlist = band.generate(prevrow)
+            if band.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
+                pagenumber = self.newpage(canvas, row, pagenumber)
+            self.current_offset += self.addtopage(canvas, elementlist)
+
         if self.reportfooter:
             elementlist = self.reportfooter.generate(row)
-            if (self.current_offset + elementlist[0]) >= self.endofpage:
+            if self.reportfooter.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                 pagenumber = self.newpage(canvas, row, pagenumber)
-            for el in elementlist[1:]:
-                el.render(self.current_offset, canvas)
-            self.current_offset += elementlist[0]
+            self.current_offset += self.addtopage(canvas, elementlist)
+
         canvas.showPage()
 
 
@@ -240,9 +311,9 @@ if __name__ == "__main__":
 
     rpt = Report(data)
     rpt.detailband = Band([
-        Element((36, 0), ("Helvetica", 12), key = "name"),
-        Element((240, 0), ("Helvetica", 12), key = "phone"),
-        Element((400, 0), ("Helvetica", 12), key = "amount", right = 1),
+        Element((36, 0), ("Helvetica", 11), key = "name"),
+        Element((240, 0), ("Helvetica", 11), key = "phone"),
+        Element((400, 0), ("Helvetica", 11), key = "amount", right = 1),
     ])
     rpt.pageheader = Band([
         Element((36, 0), ("Times-Bold", 20), text = "Page Header"),
@@ -256,9 +327,26 @@ if __name__ == "__main__":
     ])
     rpt.reportfooter = Band([
         Rule((330, 4), 72),
-        Element((240, 4), ("Helvetica-Bold", 12), text = "Total"),
-        SumElement((400, 4), ("Helvetica", 12), key = "amount", right = 1),
-    ])
+        Element((240, 4), ("Helvetica-Bold", 12), text = "Grand Total"),
+        SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
+        Element((36, 16), ("Helvetica-Bold", 12), text = ""),
+    ], newpagebefore = 1)
+    rpt.groupfooters = [
+        Band([
+            Rule((330, 4), 72),
+            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(), 
+                format = lambda x: "Subtotal for %s" % x),
+            SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
+            Element((36, 16), ("Helvetica-Bold", 12), text = ""),
+        ], getvalue = lambda x: x["name"][0].upper()),
+    ]
+    rpt.groupheaders = [
+        Band([
+            Rule((36, 20), 7.5*72),
+            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(), 
+                format = lambda x: "Names beginning with %s" % x),
+        ], getvalue = lambda x: x["name"][0].upper()),
+    ]
 
     canvas = Canvas("test.pdf", rpt.pagesize)
     rpt.generate(canvas)
