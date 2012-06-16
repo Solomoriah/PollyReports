@@ -158,14 +158,18 @@ class Rule:
 class Band:
 
     # key, getvalue and previousvalue are used only for group headers and footers
-    # newpagebefore does not apply to detail bands, page headers, or page footers, obviously
+    # newpagebefore/after do not apply to detail bands, page headers, or page footers, obviously
+    # newpageafter also does not apply to the report footer
 
-    def __init__(self, elements = None, childbands = None, key = None, getvalue = None, newpagebefore = 0):
+    def __init__(self, elements = None, childbands = None, 
+                 key = None, getvalue = None, 
+                 newpagebefore = 0, newpageafter = 0):
         self.elements = elements
         self.key = key
         self._getvalue = getvalue
         self.previousvalue = None
         self.newpagebefore = newpagebefore
+        self.newpageafter = newpageafter
         if childbands is None:
             self.childbands = []
         else:
@@ -281,6 +285,8 @@ class Report:
                     if self.groupfooters[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                         pagenumber = self.newpage(canvas, row, pagenumber)
                     self.current_offset += self.addtopage(canvas, elementlist)
+                    if self.groupfooters[i].newpageafter:
+                        self.current_offset = self.pagesize[1]
             for band in self.groupfooters:
                 band.summarize(row)
 
@@ -294,6 +300,8 @@ class Report:
                     if self.groupheaders[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                         pagenumber = self.newpage(canvas, row, pagenumber)
                     self.current_offset += self.addtopage(canvas, elementlist)
+                    if self.groupheaders[i].newpageafter:
+                        self.current_offset = self.pagesize[1]
 
             elementlist = self.detailband.generate(row)
             if (self.current_offset + elementlist[0]) >= self.endofpage:
@@ -308,6 +316,8 @@ class Report:
             if band.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                 pagenumber = self.newpage(canvas, row, pagenumber)
             self.current_offset += self.addtopage(canvas, elementlist)
+            if band.newpageafter:
+                self.current_offset = self.pagesize[1]
 
         if self.reportfooter:
             elementlist = self.reportfooter.generate(row)
@@ -346,7 +356,7 @@ if __name__ == "__main__":
         Element((240, 4), ("Helvetica-Bold", 12), text = "Grand Total"),
         SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
         Element((36, 16), ("Helvetica-Bold", 12), text = ""),
-    ], newpagebefore = 1)
+    ])
     rpt.groupfooters = [
         Band([
             Rule((330, 4), 72),
@@ -354,7 +364,7 @@ if __name__ == "__main__":
                 format = lambda x: "Subtotal for %s" % x),
             SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
             Element((36, 16), ("Helvetica-Bold", 12), text = ""),
-        ], getvalue = lambda x: x["name"][0].upper()),
+        ], getvalue = lambda x: x["name"][0].upper(), newpageafter = 1),
     ]
     rpt.groupheaders = [
         Band([
@@ -364,7 +374,7 @@ if __name__ == "__main__":
         ], getvalue = lambda x: x["name"][0].upper()),
     ]
 
-    canvas = Canvas("test.pdf", rpt.pagesize)
+    canvas = Canvas("test.pdf", (72*11, 72*8.5))
     rpt.generate(canvas)
     canvas.save()
 
