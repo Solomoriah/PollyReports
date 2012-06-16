@@ -55,15 +55,19 @@
 
 class Renderer:
 
-    def __init__(self, pos, font, text, right, height):
+    def __init__(self, parent, pos, font, text, right, height, onrender):
+        self.parent = parent
         self.pos = pos
         self.font = font
         self.lines = text.split("\n")
         self.right = right
         self.lineheight = height
         self.height = height * len(self.lines)
+        self.onrender = onrender
 
     def render(self, offset, canvas):
+        if self.onrender is not None:
+            self.onrender(self)
         canvas.setFont(*self.font)
         for text in self.lines:
             if self.right:
@@ -88,7 +92,7 @@ class Element:
 
     def __init__(self, pos = None, font = None,
                  text = None, key = None, getvalue = None, sysvar = None,
-                 right = 0, format = str, leading = None):
+                 right = 0, format = str, leading = None, onrender = None):
         self.text = text
         self.key = key
         self._getvalue = getvalue
@@ -101,6 +105,8 @@ class Element:
             self.leading = leading
         else:
             self.leading = max(1, int(font[1] * 0.4 + 0.5))
+        self.onrender = onrender
+
         self.report = None
         self.summary = 0 # used in SumElement, below
 
@@ -125,8 +131,8 @@ class Element:
     # which can be used to print the element out.
 
     def generate(self, row):
-        return Renderer(self.pos, self.font, self.gettext(row), self.right,
-            self.font[1] + self.leading)
+        return Renderer(self, self.pos, self.font, self.gettext(row), self.right,
+            self.font[1] + self.leading, self.onrender)
 
 
 class SumElement(Element):
