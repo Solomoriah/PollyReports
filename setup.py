@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # Setup for PollyReports
 
-from distutils.core import setup, Extension
-import sys
+from distutils.core import setup
 
 long_description = """\
 Report Generation Module
@@ -33,12 +32,12 @@ for the band, Renderer.render() will be called for each Renderer in the element
 list in order to actually render the data.
 
 This version is written for Python 2.7, but should be easily adapted to Python 3.
-""",
+"""
 
 setup(
 
     name = "PollyReports",
-    version = "1.0"
+    version = "1.0",
     author = "Chris Gonnerman",
     author_email = "chris@gonnerman.org",
     url = "http://newcenturycomputers.net/projects/pollyreports.html",
