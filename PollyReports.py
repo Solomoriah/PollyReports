@@ -34,7 +34,7 @@
 """
     PollyReports.py
 
-    PollyReports provides a framework for report generation.  
+    PollyReports provides a framework for report generation.
 
     A Report object has a data source bound to it at instantiation.
     One or more Band objects (at least, a detail Band) must be added
@@ -69,6 +69,10 @@ class Renderer:
         else:
             canvas.drawString(self.pos[0], (-1) * (self.pos[1]+offset+self.font[1]), self.text)
 
+    def applyoffset(self, offset):
+        self.pos = (self.pos[0], self.pos[1] + offset)
+        return self
+
 
 class Element:
 
@@ -79,8 +83,8 @@ class Element:
     # all three should not be submitted at the same time,
     #   but if they are, getvalue overrides key overrides text.
 
-    def __init__(self, pos, font, 
-                 text = None, key = None, getvalue = None, 
+    def __init__(self, pos, font,
+                 text = None, key = None, getvalue = None,
                  right = 0, format = str, leading = None):
         self.text = text
         self.key = key
@@ -111,7 +115,7 @@ class Element:
     # which can be used to print the element out.
 
     def generate(self, row):
-        return Renderer(self.pos, self.font, self.gettext(row), self.right, 
+        return Renderer(self.pos, self.font, self.gettext(row), self.right,
             self.font[1] + self.leading)
 
 
@@ -146,7 +150,7 @@ class Rule:
         canvas.saveState()
         canvas.setLineWidth(self.height)
         canvas.setStrokeGray(0)
-        canvas.line(self.pos[0],            -1 * (self.pos[1]+offset), 
+        canvas.line(self.pos[0],            -1 * (self.pos[1]+offset),
                     self.pos[0]+self.width, -1 * (self.pos[1]+offset))
         canvas.restoreState()
 
@@ -156,24 +160,34 @@ class Band:
     # key, getvalue and previousvalue are used only for group headers and footers
     # newpagebefore does not apply to detail bands, page headers, or page footers, obviously
 
-    def __init__(self, elements = None, key = None, getvalue = None, newpagebefore = 0):
+    def __init__(self, elements = None, childbands = None, key = None, getvalue = None, newpagebefore = 0):
         self.elements = elements
         self.key = key
         self._getvalue = getvalue
         self.previousvalue = None
         self.newpagebefore = newpagebefore
+        if childbands is None:
+            self.childbands = []
+        else:
+            self.childbands = childbands
 
     # generating a band creates a list of Renderer objects.
     # the first element of the list is a single integer
-    # representing the calculated printing height of the 
+    # representing the calculated printing height of the
     # list.
 
     def generate(self, row):
         elementlist = [ 0 ]
         for element in self.elements:
-            el = element.generate(row)
-            elementlist[0] = max(elementlist[0], el.height + el.pos[1])
-            elementlist.append(el)
+            renderer = element.generate(row)
+            elementlist[0] = max(elementlist[0], renderer.height + renderer.pos[1])
+            elementlist.append(renderer)
+        for band in self.childbands:
+            childlist = band.generate(row)
+            for renderer in childlist[1:]:
+                renderer.applyoffset(elementlist[0])
+                elementlist.append(renderer)
+            elementlist[0] += childlist[0]
         return elementlist
 
     # summarize() is only used for total bands, i.e. group and
@@ -312,13 +326,15 @@ if __name__ == "__main__":
     rpt = Report(data)
     rpt.detailband = Band([
         Element((36, 0), ("Helvetica", 11), key = "name"),
-        Element((240, 0), ("Helvetica", 11), key = "phone"),
         Element((400, 0), ("Helvetica", 11), key = "amount", right = 1),
+    ], childbands = [
+        Band([
+            Element((72, 0), ("Helvetica", 11), key = "phone"),
+        ]),
     ])
     rpt.pageheader = Band([
         Element((36, 0), ("Times-Bold", 20), text = "Page Header"),
         Element((36, 24), ("Helvetica", 12), text = "Name"),
-        Element((240, 24), ("Helvetica", 12), text = "Phone"),
         Element((400, 24), ("Helvetica", 12), text = "Amount", right = 1),
         Rule((36, 42), 7.5*72),
     ])
@@ -334,7 +350,7 @@ if __name__ == "__main__":
     rpt.groupfooters = [
         Band([
             Rule((330, 4), 72),
-            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(), 
+            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(),
                 format = lambda x: "Subtotal for %s" % x),
             SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
             Element((36, 16), ("Helvetica-Bold", 12), text = ""),
@@ -343,7 +359,7 @@ if __name__ == "__main__":
     rpt.groupheaders = [
         Band([
             Rule((36, 20), 7.5*72),
-            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(), 
+            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(),
                 format = lambda x: "Names beginning with %s" % x),
         ], getvalue = lambda x: x["name"][0].upper()),
     ]
