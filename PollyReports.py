@@ -181,10 +181,7 @@ class Band:
         self.previousvalue = None
         self.newpagebefore = newpagebefore
         self.newpageafter = newpageafter
-        if childbands is None:
-            self.childbands = []
-        else:
-            self.childbands = childbands
+        self.childbands = childbands or []
 
     # generating a band creates a list of Renderer objects.
     # the first element of the list is a single integer
@@ -232,19 +229,21 @@ class Band:
 
 class Report:
 
-    def __init__(self, datasource):
+    def __init__(self, datasource = None,
+            detailband = None, pageheader = None, pagefooter = None,
+            reportfooter = None, groupheaders = None, groupfooters = None):
         self.datasource = datasource
         self.pagesize = None
         self.topmargin = 36
         self.bottommargin = 36
 
         # bands
-        self.detailband = None
-        self.pageheader = None
-        self.pagefooter = None
-        self.reportfooter = None
-        self.groupheaders = []
-        self.groupfooters = []
+        self.detailband = detailband
+        self.pageheader = pageheader
+        self.pagefooter = pagefooter
+        self.reportfooter = reportfooter
+        self.groupheaders = groupheaders or []
+        self.groupfooters = groupfooters or []
 
         self.pagenumber = 0
 
@@ -352,58 +351,6 @@ class Report:
             self.current_offset += self.addtopage(canvas, elementlist)
 
         canvas.showPage()
-
-
-if __name__ == "__main__":
-
-    from reportlab.pdfgen.canvas import Canvas
-    from testdata import data
-
-    rpt = Report(data)
-    rpt.detailband = Band([
-        Element((36, 0), ("Helvetica", 11), key = "name"),
-        Element((400, 0), ("Helvetica", 11), key = "amount", right = 1),
-    ], childbands = [
-        Band([
-            Element((72, 0), ("Helvetica", 11), key = "phone"),
-        ]),
-    ])
-    rpt.pageheader = Band([
-        Element((36, 0), ("Times-Bold", 20), text = "Page Header"),
-        Element((36, 24), ("Helvetica", 12), text = "Name"),
-        Element((400, 24), ("Helvetica", 12), text = "Amount", right = 1),
-        Rule((36, 42), 7.5*72, thickness = 2),
-    ])
-    rpt.pagefooter = Band([
-        Element((72*8, 0), ("Times-Bold", 20), text = "Page Footer", right = 1),
-        Element((36, 16), ("Helvetica-Bold", 12), sysvar = "pagenumber", format = lambda x: "Page %d" % x),
-    ])
-    rpt.reportfooter = Band([
-        Rule((330, 4), 72),
-        Element((240, 4), ("Helvetica-Bold", 12), text = "Grand Total"),
-        SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
-        Element((36, 16), ("Helvetica-Bold", 12), text = ""),
-    ])
-    rpt.groupfooters = [
-        Band([
-            Rule((330, 4), 72),
-            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(),
-                format = lambda x: "Subtotal for %s" % x),
-            SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
-            Element((36, 16), ("Helvetica-Bold", 12), text = ""),
-        ], getvalue = lambda x: x["name"][0].upper(), newpageafter = 1),
-    ]
-    rpt.groupheaders = [
-        Band([
-            Rule((36, 20), 7.5*72),
-            Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(),
-                format = lambda x: "Names beginning with %s" % x),
-        ], getvalue = lambda x: x["name"][0].upper()),
-    ]
-
-    canvas = Canvas("test.pdf", (72*11, 72*8.5))
-    rpt.generate(canvas)
-    canvas.save()
 
 
 # end of file.
