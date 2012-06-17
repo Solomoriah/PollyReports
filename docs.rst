@@ -2,6 +2,8 @@
 PollyReports -- A Database Report Generator
 ===========================================
 
+**Updated for version 1.2**
+
 PollyReports.py provides a set of classes for database report writing.  It
 assumes that you are using Reportlab to do PDF generation, but can work with
 any "canvas-like" object as desired.
@@ -49,12 +51,15 @@ All measurements used in PollyReports are in terms of points, where one point
 is equal to 1/72 inch.  In actuality, this is a feature of Reportlab (and of
 PDF generation in general), not merely a feature of PollyReports.
 
-Attributes are shown with their default values, if any.
+Attributes are shown with their default values, if any.  Empty lists shown are
+intelligently assigned (I know better than to actually include an empty list as
+a default parameter value).
 
 class Report
 ------------
 
-    ``rpt = Report(datasource)``
+    ``rpt = Report(datasource = None, detailband = None, pageheader = None, pagefooter = None,
+    reportfooter = None, groupheaders = [], groupfooters = [])``
 
     *datasource* must be an iterable object which yields objects that
     can be indexed with [].  A standard database cursor yielding
@@ -63,14 +68,43 @@ class Report
 
     If the datasource is empty, no output is generated.
 
+    *detailband* should be initialized to a Band object (see below) which will
+    be generated once per row in the data source.
+
+    *pageheader* is a Band object which is printed at the top of each page.
+    When the pageheader Band is generated, it receives the row of data that
+    will appear as the first on the page.
+
+    *pagefooter* is a Band object which is printed at the bottom of each page.
+    When the pagefooter Band is generated, it receives the row of data that
+    will appear as the first on the page.
+
+    *reportfooter* is a Band object which is printed at the very end of the
+    report.  When the reportfooter Band is generated, it receives the row of
+    data that was last processed.
+
+    *groupheaders* is a list of Band objects which are printed at the
+    beginning of a new group of records, as defined by the 'value' of the Band
+    (see below for more details).  Whenever the value changes, that header, and
+    all higher-level (i.e. earlier in the list) headers automatically print.
+    When a groupheader Band is generated, it receives the row of data that will
+    be the first in the new group.
+
+    *groupfooters* is a list of Band objects which are printed at the end
+    of a new group of records, as defined by the 'value' of the Band (see below
+    for more details).  Whenever the value changes, that footer, and all
+    lower-level (i.e. later in the list) footers automatically print.  When a
+    groupfooter Band is generated, it receives the row of data that was last in
+    the group.
+
     **Methods**
 
     ``rpt.generate(canvas)``
 
-    The generate method requires a single parameter, which must be a
-    Reportlab Canvas object or an object that presents a similar interface.
-    As it stands now, the following methods and attributes are the only
-    ones being used by PollyReports::
+    The generate method requires a single parameter, which must be a Reportlab
+    Canvas object or an object that presents a similar interface.  As it stands
+    now, the following canvas methods and attributes are the only ones being
+    used by PollyReports::
 
         canvas.drawRightString()
         canvas.drawString()
@@ -86,47 +120,14 @@ class Report
 
     **Attributes**
 
-    This is where the main work of setting up a Report gets done.
-    In a future version, it's entirely possible I may add these things
-    to the initialization function of the Report object, but for now,
-    they are accessed by attribute only.
+    All of the initialization parameters described above populate like-named
+    attributes, which will not be described again.  It is equally acceptable to
+    assign them via the attributes after instantiation as by the initialization
+    parameters.
 
     ``rpt.topmargin = 36`` defines the top margin of the report.
 
     ``rpt.bottommargin = 36`` defines the bottom margin of the report.
-
-    ``rpt.detailband = None`` should be initialized to a Band object (see below)
-    which will be generated once per row in the data source.
-
-    ``rpt.pageheader = None`` is a Band object which is printed at the top
-    of each page. When the pageheader Band is generated, it receives the
-    row of data that will appear as the first on the page.
-
-    ``rpt.pagefooter = None`` 
-    is a Band object which is printed at the bottom
-    of each page. When the pagefooter Band is generated, it receives the
-    row of data that will appear as the first on the page.
-
-    ``rpt.reportfooter = None``
-    is a Band object which is printed at the very end of the report.
-    When the reportfooter Band is generated, it receives the
-    row of data that was last processed.
-
-    ``rpt.groupheaders = []``
-    is a list of Band objects which are printed at the beginning of a new
-    group of records, as defined by the 'value' of the Band (see below for
-    more details).  Whenever the value changes, that header, and all higher-level
-    (i.e. earlier in the list) headers automatically print.
-    When a groupheader Band is generated, it receives the
-    row of data that will be the first in the new group.
-
-    ``rpt.groupfooters = []``
-    is a list of Band objects which are printed at the end of a new
-    group of records, as defined by the 'value' of the Band (see below for
-    more details).  Whenever the value changes, that footer, and all lower-level
-    (i.e. later in the list) footers automatically print.
-    When a groupfooter Band is generated, it receives the
-    row of data that was last in the group.
 
     ``rpt.pagenumber = 0`` is not generally changed by the caller; however,
     as a Report attribute, it is accessible to an Element using the ``sysvar``
@@ -138,29 +139,30 @@ class Band
 
     ``band = Band(elements, childbands, key, getvalue, newpagebefore = 0, newpageafter = 0)``
 
-    *elements* is a list of Element (or Element-like) objects which define what data from 
-    the row to print, and how to print it.  See Element, below, for details.
+    *elements* is a list of Element (or Element-like) objects which define what
+    data from the row to print, and how to print it.  See Element, below, for
+    details.
 
-    *childbands* is a list of Band objects which will be appended below this Band when
-    it is generated.  Child bands float below their parent, so if the parent has an
-    Element which renders at different heights, the Elements in the child band(s) will 
-    not overwrite it.
+    *childbands* is a list of Band objects which will be appended below this
+    Band when it is generated.  Child bands float below their parent, so if the
+    parent has an Element which renders at different heights, the Elements in
+    the child band(s) will not overwrite it.
     
-    *getvalue* is a function which accepts one parameter, the row, and returns an
-    item of data.  This permits calculations or modifications of the data before use.
-    If getvalue is not provided, key is used.
-    If neither key nor getvalue are provided, the value of the Band is None.
+    *getvalue* is a function which accepts one parameter, the row, and returns
+    an item of data.  This permits calculations or modifications of the data
+    before use.  If getvalue is not provided, key is used.  If neither key nor
+    getvalue are provided, the value of the Band is None.
 
     *key* is the key used to access data within the row, i.e., the row will be
     accessed as ``row[key]``.  key is only used if getvalue is not provided.
 
-    *Note: Band values are used only in group headers and group footers, to determine
-    if the value has changed.*
+    *Note: Band values are used only in group headers and group footers, to
+    determine if the value has changed.*
 
     *newpagebefore* and *newpageafter*, if true, indicate that a new page must
-    be started at the indicated time.
-    Neither apply to detail bands, page headers, or page footers, and newpageafter 
-    also does not apply to the report footer.
+    be started at the indicated time.  Neither apply to detail bands, page
+    headers, or page footers, and newpageafter also does not apply to the
+    report footer.
 
     **Methods** and **Attributes**
 
