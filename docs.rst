@@ -228,15 +228,42 @@ class Element
 class SumElement
 ----------------
 
-    *to be completed*
+    ``sumelement = SumElement(pos, font, text = None, key = None, getvalue = None, 
+    sysvar = None, right = 0, format = str, leading = None, onrender = None)``
+
+    SumElement is a subclass of Element which is used to calculate a sum (total)
+    of the value of the SumElement over a group of records.  SumElements are only
+    effective when included within group footers or the report footer.  In general,
+    a SumElement sums up its values continuously until the value is retrieved,
+    i.e. until the SumElement is rendered, at which point the running total is
+    reset to zero.
+
+    SumElements have the same parameters, methods, and attributes as regular
+    Elements; see above for details of these features.
 
 class Renderer
 --------------
 
-    *to be completed*
+    Renderers are internal objects used by PollyReports to print out the values
+    of Elements.  As they are entirely internal, they will not be described in
+    any particular detail here; if you need to understand more fully how they
+    work, please consult the source code.
 
 class Rule
 ----------
 
-    *to be completed*
+    ``rule = Rule(pos, width, thickness = 1)``
+
+    The Rule class is used to print out horizontal lines, such as separators.
+
+    *pos* is a tuple defining the starting position of the Rule when rendered.  
+
+    *width* is the width (extending right from the position indicated by *pos*)
+    to which the Rule will extend.
+
+    *thickness* defines the thickness of the Rule when rendered.
+
+    **Methods** and **Attributes**
+
+    Rules have no public methods or attributes.
 

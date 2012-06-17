@@ -157,8 +157,8 @@ class Rule:
         canvas.saveState()
         canvas.setLineWidth(self.height)
         canvas.setStrokeGray(0)
-        canvas.line(self.pos[0],            -1 * (self.pos[1]+offset),
-                    self.pos[0]+self.width, -1 * (self.pos[1]+offset))
+        canvas.line(self.pos[0],            -1 * (self.pos[1]+offset+self.height//2),
+                    self.pos[0]+self.width, -1 * (self.pos[1]+offset+self.height//2))
         canvas.restoreState()
 
     def applyoffset(self, offset):
@@ -372,7 +372,7 @@ if __name__ == "__main__":
         Element((36, 0), ("Times-Bold", 20), text = "Page Header"),
         Element((36, 24), ("Helvetica", 12), text = "Name"),
         Element((400, 24), ("Helvetica", 12), text = "Amount", right = 1),
-        Rule((36, 42), 7.5*72),
+        Rule((36, 42), 7.5*72, thickness = 2),
     ])
     rpt.pagefooter = Band([
         Element((72*8, 0), ("Times-Bold", 20), text = "Page Footer", right = 1),
