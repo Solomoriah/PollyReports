@@ -299,13 +299,12 @@ class Report:
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
 
-            firstchanged = None
+            lastchanged = None
             for i in range(len(self.groupfooters)):
                 if self.groupfooters[i].ischanged(row):
-                    if firstchanged is None:
-                        firstchanged = i
-            if firstchanged is not None:
-                for i in range(firstchanged, len(self.groupfooters)):
+                    lastchanged = i
+            if lastchanged is not None:
+                for i in range(lastchanged+1):
                     elementlist = self.groupfooters[i].generate(prevrow)
                     if self.groupfooters[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, row)
@@ -315,12 +314,13 @@ class Report:
             for band in self.groupfooters:
                 band.summarize(row)
 
-            lastchanged = None
+            firstchanged = None
             for i in range(len(self.groupheaders)):
                 if self.groupheaders[i].ischanged(row):
-                    lastchanged = i
-            if lastchanged is not None:
-                for i in range(lastchanged+1):
+                    if firstchanged is None:
+                        firstchanged = i
+            if firstchanged is not None:
+                for i in range(firstchanged, len(self.groupheaders)):
                     elementlist = self.groupheaders[i].generate(row)
                     if self.groupheaders[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, row)
@@ -328,12 +328,15 @@ class Report:
                     if self.groupheaders[i].newpageafter:
                         self.current_offset = self.pagesize[1]
 
-            elementlist = self.detailband.generate(row)
-            if (self.current_offset + elementlist[0]) >= self.endofpage:
-                self.newpage(canvas, row)
-            self.current_offset += self.addtopage(canvas, elementlist)
+            if self.detailband is not None:
+                elementlist = self.detailband.generate(row)
+                if (self.current_offset + elementlist[0]) >= self.endofpage:
+                    self.newpage(canvas, row)
+                self.current_offset += self.addtopage(canvas, elementlist)
+
             if self.reportfooter:
                 self.reportfooter.summarize(row)
+
             prevrow = row
 
         for band in self.groupfooters:

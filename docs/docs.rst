@@ -2,8 +2,6 @@
 PollyReports -- A Database Report Generator
 ===========================================
 
-**Updated for version 1.2**
-
 PollyReports.py provides a set of classes for database report writing.  It
 assumes that you are using Reportlab to do PDF generation, but can work with
 any "canvas-like" object as desired.
@@ -69,7 +67,13 @@ class Report
     If the datasource is empty, no output is generated.
 
     *detailband* should be initialized to a Band object (see below) which will
-    be generated once per row in the data source.
+    be generated once per row in the data source.  It is acceptable for the
+    detail band to be None, which means no detail band will be rendered for
+    each row (but subtotals, for instance, will still be generated).  This is
+    useful when you want a single report to offer both "detail" and "summary"
+    views.  However, if your design calls for the detail band to always be
+    omitted, you may wish to redesign your database query instead for better
+    performance.
 
     *pageheader* is a Band object which is printed at the top of each page.
     When the pageheader Band is generated, it receives the row of data that
@@ -86,16 +90,20 @@ class Report
     *groupheaders* is a list of Band objects which are printed at the
     beginning of a new group of records, as defined by the 'value' of the Band
     (see below for more details).  Whenever the value changes, that header, and
-    all higher-level (i.e. earlier in the list) headers automatically print.
-    When a groupheader Band is generated, it receives the row of data that will
-    be the first in the new group.
+    all lower-level (i.e. later in the list) headers automatically print.  If
+    more than one group header band is defined, be sure to list the most
+    important one (the one that changes least often) first.  When a groupheader
+    Band is generated, it receives the row of data that will be the first in
+    the new group.
 
     *groupfooters* is a list of Band objects which are printed at the end
     of a new group of records, as defined by the 'value' of the Band (see below
     for more details).  Whenever the value changes, that footer, and all
-    lower-level (i.e. later in the list) footers automatically print.  When a
-    groupfooter Band is generated, it receives the row of data that was last in
-    the group.
+    earlier (higher in the list) footers automatically print.  If more than one
+    group footer band is defined, be sure to list the most important one (the
+    one that changes least often) last.  *This behavior is different from the
+    group header behavior, and is by design.* When a groupfooter Band is
+    generated, it receives the row of data that was last in the group.
 
     **Methods**
 

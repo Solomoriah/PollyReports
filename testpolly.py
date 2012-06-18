@@ -63,6 +63,18 @@ rpt.reportfooter = Band([
     SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
     Element((36, 16), ("Helvetica-Bold", 12), text = ""),
 ])
+rpt.groupheaders = [
+    Band([
+        Rule((36, 20), 7.5*72),
+        Element((36, 4), ("Helvetica-Bold", 12), key = "year",
+            format = lambda x: "Year %d" % x),
+    ], key = "year"),
+    Band([
+        Rule((36, 20), 7.5*72),
+        Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(),
+            format = lambda x: "Names beginning with %s" % x),
+    ], getvalue = lambda x: x["name"][0].upper()),
+]
 rpt.groupfooters = [
     Band([
         Rule((330, 4), 72),
@@ -70,14 +82,12 @@ rpt.groupfooters = [
             format = lambda x: "Subtotal for %s" % x),
         SumElement((400, 4), ("Helvetica-Bold", 12), key = "amount", right = 1),
         Element((36, 16), ("Helvetica-Bold", 12), text = ""),
-    ], getvalue = lambda x: x["name"][0].upper(), newpageafter = 1),
-]
-rpt.groupheaders = [
-    Band([
-        Rule((36, 20), 7.5*72),
-        Element((36, 4), ("Helvetica-Bold", 12), getvalue = lambda x: x["name"][0].upper(),
-            format = lambda x: "Names beginning with %s" % x),
     ], getvalue = lambda x: x["name"][0].upper()),
+    Band([
+        Rule((330, 4), 72),
+        Element((36, 4), ("Helvetica-Bold", 12), key = "year",
+            format = lambda x: "Subtotal for %d" % x),
+    ], key = "year", newpageafter = 1),
 ]
 
 sys.stdout.write("Report Starting...\nPage ")
