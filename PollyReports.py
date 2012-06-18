@@ -42,16 +42,14 @@
 """
 
 
-
-
 class Renderer:
 
-    def __init__(self, parent, pos, font, text, right, height, onrender):
+    def __init__(self, parent, pos, font, text, align, height, onrender):
         self.parent = parent
         self.pos = pos
         self.font = font
         self.lines = text.split("\n")
-        self.right = right
+        self.align = align
         self.lineheight = height
         self.height = height * len(self.lines)
         self.onrender = onrender
@@ -59,12 +57,24 @@ class Renderer:
     def render(self, offset, canvas):
         if self.onrender is not None:
             self.onrender(self)
+        leftmargin = self.parent.report.leftmargin
         canvas.setFont(*self.font)
         for text in self.lines:
-            if self.right:
-                canvas.drawRightString(self.pos[0], (-1) * (self.pos[1]+offset+self.font[1]), text)
-            else:
-                canvas.drawString(self.pos[0], (-1) * (self.pos[1]+offset+self.font[1]), text)
+            if "right".startswith(self.align):
+                canvas.drawRightString(
+                    self.pos[0]+leftmargin,
+                    (-1) * (self.pos[1]+offset+self.font[1]),
+                    text)
+            elif "center".startswith(self.align) or "centre".startswith(self.align):
+                canvas.drawCentredString(
+                    self.pos[0]+leftmargin,
+                    (-1) * (self.pos[1]+offset+self.font[1]),
+                    text)
+            elif "left".startswith(self.align):
+                canvas.drawString(
+                    self.pos[0]+leftmargin,
+                    (-1) * (self.pos[1]+offset+self.font[1]),
+                    text)
             offset += self.lineheight
 
     def applyoffset(self, offset):
@@ -83,7 +93,7 @@ class Element:
 
     def __init__(self, pos = None, font = None,
                  text = None, key = None, getvalue = None, sysvar = None,
-                 right = 0, format = str, leading = None, onrender = None):
+                 align = "left", format = str, leading = None, onrender = None):
         self.text = text
         self.key = key
         self._getvalue = getvalue
@@ -91,7 +101,7 @@ class Element:
         self.pos = pos
         self.font = font
         self._format = format
-        self.right = right
+        self.align = align
         if leading is not None:
             self.leading = leading
         else:
@@ -122,7 +132,7 @@ class Element:
     # which can be used to print the element out.
 
     def generate(self, row):
-        return Renderer(self, self.pos, self.font, self.gettext(row), self.right,
+        return Renderer(self, self.pos, self.font, self.gettext(row), self.align,
             self.font[1] + self.leading, self.onrender)
 
 
@@ -139,10 +149,11 @@ class SumElement(Element):
 
 class Rule:
 
-    def __init__(self, pos, width, thickness = 1):
+    def __init__(self, pos, width, thickness = 1, report = None):
         self.pos = pos
         self.width = width
         self.height = thickness
+        self.report = report
 
     def gettext(self, row):
         return "-"
@@ -151,14 +162,17 @@ class Rule:
         return "-"
 
     def generate(self, row):
-        return Rule(self.pos, self.width, self.height)
+        return Rule(self.pos, self.width, self.height, self.report)
 
     def render(self, offset, canvas):
+        leftmargin = self.report.leftmargin
         canvas.saveState()
         canvas.setLineWidth(self.height)
         canvas.setStrokeGray(0)
-        canvas.line(self.pos[0],            -1 * (self.pos[1]+offset+self.height//2),
-                    self.pos[0]+self.width, -1 * (self.pos[1]+offset+self.height//2))
+        canvas.line(self.pos[0]+leftmargin,
+                    -1 * (self.pos[1]+offset+self.height/2),
+                    self.pos[0]+self.width+leftmargin,
+                    -1 * (self.pos[1]+offset+self.height/2))
         canvas.restoreState()
 
     def applyoffset(self, offset):
@@ -236,6 +250,7 @@ class Report:
         self.pagesize = None
         self.topmargin = 36
         self.bottommargin = 36
+        self.leftmargin = 36
 
         # bands
         self.detailband = detailband
@@ -246,6 +261,7 @@ class Report:
         self.groupfooters = groupfooters or []
 
         self.pagenumber = 0
+        self.rownumber = 0
 
     def newpage(self, canvas, row):
         if self.pagenumber:
@@ -278,7 +294,10 @@ class Report:
     def generate(self, canvas):
 
         # every Element in every Band needs a reference to this Report
-        self.setreference([ self.detailband, self.pageheader, self.pagefooter, self.reportfooter ])
+        self.setreference([ 
+            self.detailband, self.pageheader, 
+            self.pagefooter, self.reportfooter,
+        ])
         self.setreference(self.groupheaders)
         self.setreference(self.groupfooters)
 
@@ -290,6 +309,8 @@ class Report:
         firstrow = 1
 
         for row in self.datasource:
+
+            self.rownumber += 1
 
             if firstrow:
                 firstrow = None

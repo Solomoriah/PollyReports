@@ -1,8 +1,6 @@
 LICENSE
 PollyReports.py
 README.txt
-docs.html
-docs.rst
 setup.py
 testdata.py
 testpolly.py
