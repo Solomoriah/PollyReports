@@ -460,7 +460,7 @@ report footer.</p>
 <h2>class Element</h2>
 <blockquote>
 <p><tt class="docutils literal">element = Element(pos, font, text = None, key = None, getvalue = None,
-sysvar = None, right = 0, format = str, leading = None, onrender = None)</tt></p>
+sysvar = None, align = &quot;left&quot;, format = str, leading = None, onrender = None)</tt></p>
 <p><em>Note: An important feature of an Element is its value.  In general, the value
 of an Element is relative to the current row, though this is not always so.
 There are four methods an Element may employ to acquire a value, and they
@@ -482,9 +482,14 @@ one of the other access methods will be applied.</p>
 of the current row's content.</p>
 <p><em>sysvar</em> is used to acquire a value from an attribute of the top-level Report
 object.  It is usually used to access the current page number, i.e. <tt class="docutils literal">sysvar = &quot;pagenumber&quot;</tt>.</p>
-<p><em>right</em>, if true, indicates that the Element should be rendered aligned to the right
-rather than to the left.  The pos value will then indicate the upper-right corner
-of the Element.</p>
+<p><em>align</em> may be set to any of &quot;left&quot;, &quot;right&quot;, &quot;center&quot; (or &quot;centre&quot;), or &quot;align&quot;.
+It indicates where the value should be printed with respect to the x coordinate
+of the Element.  If set to &quot;left&quot; (the default), the text will be aligned on the left,
+and therefore extend to the right from the given x coordinate.  If set to &quot;right&quot;,
+it will be aligned to the right (and thus extends to the left of the x coordinate).
+&quot;center&quot; centers the text at the given coordinate, and &quot;align&quot; attempts to line
+up the decimal point at that location.  Please review the Reportlab documentation
+for more details on the &quot;align&quot; value (see the method <em>drawAlignedString()</em>).</p>
 <p><em>format</em> is a reference to a function or other callable (str by default) which
 is applied to the Element's value before rendering.</p>
 <p><em>leading</em> is the number of points to add to the &quot;official&quot; height of the Element
@@ -505,7 +510,7 @@ This is initialized at the beginning of Report.generate().</p>
 <h2>class SumElement</h2>
 <blockquote>
 <p><tt class="docutils literal">sumelement = SumElement(pos, font, text = None, key = None, getvalue = None,
-sysvar = None, right = 0, format = str, leading = None, onrender = None)</tt></p>
+sysvar = None, align = &quot;left&quot;, format = str, leading = None, onrender = None)</tt></p>
 <p>SumElement is a subclass of Element which is used to calculate a sum (total)
 of the value of the SumElement over a group of records.  SumElements are only
 effective when included within group footers or the report footer.  In general,

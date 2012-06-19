@@ -75,6 +75,11 @@ class Renderer:
                     self.pos[0]+leftmargin,
                     (-1) * (self.pos[1]+offset+self.font[1]),
                     text)
+            elif "align".startswith(self.align):
+                canvas.drawAlignedString(
+                    self.pos[0]+leftmargin,
+                    (-1) * (self.pos[1]+offset+self.font[1]),
+                    text)
             offset += self.lineheight
 
     def applyoffset(self, offset):

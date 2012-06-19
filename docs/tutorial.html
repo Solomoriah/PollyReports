@@ -148,7 +148,7 @@ Here's our first shot at testpolly.py, called sample02.py:
 06. rpt.detailband = Band([
 07.     Element((36, 0), ("Helvetica", 11), key = "name"),
 08.     Element((400, 0), ("Helvetica", 11), key = "amount",
-09.             right = 1),
+09.             align = "right"),
 10. ])
 11. 
 12. canvas = Canvas("sample02.pdf", (72*11, 72*8.5))
@@ -173,7 +173,7 @@ Since the data source is a list of dict objects rather than tuples, the key
 values used in the Element declarations are strings rather than integers.
 
 <p>
-Note on line 9 the extra named parameter <b>right = 1</b>. This indicates to
+Note on line 9 the extra named parameter <b>align = "right"</b>. This indicates to
 PollyReports that the Element should be printed aligned to the right; thus, the
 amount will extend to the left of (400, 0) rather than to the right.
 
@@ -203,12 +203,12 @@ just show the part that needs to be added after line 9 in sample02.py:
 04.     Element((36, 24), ("Helvetica", 12), 
 05.         text = "Name"),
 06.     Element((400, 24), ("Helvetica", 12), 
-07.         text = "Amount", right = 1),
+07.         text = "Amount", align = "right"),
 08.     Rule((36, 42), 7.5*72, thickness = 2),
 09. ])
 10. rpt.pagefooter = Band([
 11.     Element((72*8, 0), ("Times-Bold", 20), 
-12.         text = "Page Footer", right = 1),
+12.         text = "Page Footer", align = "right"),
 13.     Element((36, 16), ("Helvetica-Bold", 12), 
 14.         sysvar = "pagenumber", 
 15.         format = lambda x: "Page %d" % x),
@@ -264,7 +264,7 @@ add; just put it after the code in the last section:
 03.     Element((240, 4), ("Helvetica-Bold", 12),
 04.         text = "Grand Total"),
 05.     SumElement((400, 4), ("Helvetica-Bold", 12), 
-06.         key = "amount", right = 1),
+06.         key = "amount", align = "right"),
 07.     Element((36, 16), ("Helvetica-Bold", 12), 
 08.         text = ""),
 09. ])
@@ -353,7 +353,7 @@ By now, this should seem old hat. A group footer band combines the techniques sh
 05.             getvalue = lambda x: x["name"][0].upper(),
 06.             format = lambda x: "Subtotal for %s" % x),
 07.         SumElement((400, 4), ("Helvetica-Bold", 12), 
-08.             key = "amount", right = 1),
+08.             key = "amount", align = "right"),
 09.         Element((36, 16), ("Helvetica-Bold", 12), 
 10.             text = ""),
 11.     ],
@@ -403,7 +403,7 @@ function:
 05.     Element((36, 24), ("Helvetica", 12), 
 06.         text = "Name"),
 07.     Element((400, 24), ("Helvetica", 12), 
-08.         text = "Amount", right = 1),
+08.         text = "Amount", align = "right"),
 09.     Rule((36, 42), 7.5*72, thickness = 2),
 10. ])
 </div>

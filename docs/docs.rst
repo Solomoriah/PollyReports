@@ -180,7 +180,7 @@ class Element
 -------------
 
     ``element = Element(pos, font, text = None, key = None, getvalue = None, 
-    sysvar = None, right = 0, format = str, leading = None, onrender = None)``
+    sysvar = None, align = "left", format = str, leading = None, onrender = None)``
 
     *Note: An important feature of an Element is its value.  In general, the value
     of an Element is relative to the current row, though this is not always so.
@@ -210,9 +210,14 @@ class Element
     *sysvar* is used to acquire a value from an attribute of the top-level Report
     object.  It is usually used to access the current page number, i.e. ``sysvar = "pagenumber"``.
 
-    *right*, if true, indicates that the Element should be rendered aligned to the right
-    rather than to the left.  The pos value will then indicate the upper-right corner
-    of the Element.
+    *align* may be set to any of "left", "right", "center" (or "centre"), or "align".
+    It indicates where the value should be printed with respect to the x coordinate
+    of the Element.  If set to "left" (the default), the text will be aligned on the left,
+    and therefore extend to the right from the given x coordinate.  If set to "right",
+    it will be aligned to the right (and thus extends to the left of the x coordinate).
+    "center" centers the text at the given coordinate, and "align" attempts to line
+    up the decimal point at that location.  Please review the Reportlab documentation
+    for more details on the "align" value (see the method *drawAlignedString()*).
 
     *format* is a reference to a function or other callable (str by default) which
     is applied to the Element's value before rendering.
@@ -239,7 +244,7 @@ class SumElement
 ----------------
 
     ``sumelement = SumElement(pos, font, text = None, key = None, getvalue = None, 
-    sysvar = None, right = 0, format = str, leading = None, onrender = None)``
+    sysvar = None, align = "left", format = str, leading = None, onrender = None)``
 
     SumElement is a subclass of Element which is used to calculate a sum (total)
     of the value of the SumElement over a group of records.  SumElements are only
