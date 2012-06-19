@@ -333,7 +333,7 @@ class Report:
                 for i in range(lastchanged+1):
                     elementlist = self.groupfooters[i].generate(prevrow)
                     if self.groupfooters[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
-                        self.newpage(canvas, row)
+                        self.newpage(canvas, prevrow)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupfooters[i].newpageafter:
                         self.current_offset = self.pagesize[1]
