@@ -114,6 +114,8 @@ class Report
     now, the following canvas methods and attributes are the only ones being
     used by PollyReports::
 
+        canvas.drawAlignedString()
+        canvas.drawCentredString()
         canvas.drawRightString()
         canvas.drawString()
         canvas.line()
