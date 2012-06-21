@@ -365,19 +365,20 @@ class Report:
 
             prevrow = row
 
-        for band in self.groupfooters:
-            elementlist = band.generate(prevrow)
-            if band.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
-                self.newpage(canvas, row)
-            self.current_offset += self.addtopage(canvas, elementlist)
-            if band.newpageafter:
-                self.current_offset = self.pagesize[1]
+        if prevrow:
+            for band in self.groupfooters:
+                elementlist = band.generate(prevrow)
+                if band.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
+                    self.newpage(canvas, row)
+                self.current_offset += self.addtopage(canvas, elementlist)
+                if band.newpageafter:
+                    self.current_offset = self.pagesize[1]
 
-        if self.reportfooter:
-            elementlist = self.reportfooter.generate(row)
-            if self.reportfooter.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
-                self.newpage(canvas, row)
-            self.current_offset += self.addtopage(canvas, elementlist)
+            if self.reportfooter:
+                elementlist = self.reportfooter.generate(row)
+                if self.reportfooter.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
+                    self.newpage(canvas, row)
+                self.current_offset += self.addtopage(canvas, elementlist)
 
         canvas.showPage()
 
