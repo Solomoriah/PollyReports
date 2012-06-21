@@ -1,0 +1,110 @@
+
+html, body, h1, h2, h3 {
+    font-family: century gothic, verdana, arial, helvetica, sans serif;
+    font-size: 17px;
+    padding-left: 1em;
+}
+
+h1, h2, h3 {
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    font-size: 25px;
+    clear: both;
+}
+
+h2 {
+    font-size: 22px;
+}
+
+h3 {
+    font-size: 19px;
+}
+
+body {
+    width: 40em;
+    padding-bottom: 3em;
+    background-image: url('background.jpg');
+    background-repeat: no-repeat;
+}
+
+div.numbers {
+    display: block;
+    padding: 4px;
+    font-family: monospace;
+    font-size: 85%;
+    white-space: pre;
+    margin-left: 3em;
+    width: 2.5em;
+    background-color: white;
+    float: left;
+}
+
+div.code {
+    display: block;
+    padding: 4px;
+    font-family: monospace;
+    font-size: 85%;
+    white-space: pre;
+    margin-left: 3em;
+    width: 40em;
+    background-color: #ffffbb;
+}
+
+div.terminal {
+    display: block;
+    padding: 4px;
+    font-family: monospace;
+    font-size: 85%;
+    white-space: pre;
+    margin-left: 3em;
+    width: 40em;
+    background-color: black;
+    color: lightgray;
+}
+
+img.display {
+    margin-left: 3em;
+}
+
+ul.menu {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    margin-bottom: 2em;
+    margin-top: 1em;
+    display: block;
+    width: 100%;
+    height: 10px;
+}
+
+ul.menu li {
+    float: left;
+    padding-right: 1em;
+}
+
+ul.menu li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    background-color: black;
+    padding-left: 1em;
+    padding-right: 1em;
+    display: block;
+}
+
+ul.menu li a:hover {
+    background-color: #aa0000;
+}
+
+a {
+    text-decoration: none;
+    color: #aa0000;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+

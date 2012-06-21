@@ -1,0 +1,35 @@
+<h1>PollyReports</h1>
+<b class=small>Copyright &copy; 2012, Chris Gonnerman<br>
+<a href='mailto:chris@gonnerman.org'>chris@gonnerman.org</a></b>
+
+<p>
+PollyReports is a report generation module for Python.  It is intended
+to be used with <a href='http://www.reportlab.com'>Reportlab</a> to
+create PDFs using data drawn from a database.
+
+<ul>
+<li><a href='tutorial.html'>PollyReports Tutorial</a>
+<li><a href='docs.html'>PollyReports Reference Manual</a>
+</ul>
+
+<p>
+The source code is hosted on <b>github</b> at the following address:
+
+<br>
+<a href='https://github.com/Solomoriah/PollyReports'>
+https://github.com/Solomoriah/PollyReports</a>
+
+<p>
+PollyReports is available via <b>PyPI</b> at:
+
+<br>
+<a href='http://pypi.python.org/pypi/PollyReports'>
+http://pypi.python.org/pypi/PollyReports</a>
+
+<p>
+I have an extensive and growing dissertation about this project on my blog at:
+
+<br>
+<a href='http://opensource.gonnerman.org/?cat=4'>
+http://opensource.gonnerman.org/?cat=4</a>
+
