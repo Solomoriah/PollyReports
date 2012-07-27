@@ -30,7 +30,7 @@ This version is written for Python 2.7, but should be easily adapted to Python 3
 setup(
 
     name = "PollyReports",
-    version = "1.5.1",
+    version = "1.6",
     author = "Chris Gonnerman",
     author_email = "chris@gonnerman.org",
     url = "http://newcenturycomputers.net/projects/pollyreports.html",
