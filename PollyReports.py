@@ -273,6 +273,7 @@ class Report:
         # private
         self._sum_detail_ht = 0
         self._avg_detail_ht = 0
+        self._max_detail_ht = 0
 
     def newpage(self, canvas, row):
         if self.pagenumber:
@@ -355,7 +356,8 @@ class Report:
             if firstchanged is not None:
                 for i in range(firstchanged, len(self.groupheaders)):
                     elementlist = self.groupheaders[i].generate(row)
-                    if self.groupheaders[i].newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
+                    if self.groupheaders[i].newpagebefore \
+                    or (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupheaders[i].newpageafter:
@@ -363,8 +365,10 @@ class Report:
 
             if self.detailband is not None:
                 elementlist = self.detailband.generate(row)
+                self._max_detail_ht = max(elementlist[0], self._max_detail_ht)
                 self._sum_detail_ht += elementlist[0]
-                self._avg_detail_ht = self._sum_detail_ht // self.rownumber
+                self._avg_detail_ht = \
+                    ((self._sum_detail_ht // self.rownumber) + self._max_detail_ht) // 2
                 if (self.current_offset + elementlist[0]) >= self.endofpage:
                     self.newpage(canvas, row)
                 self.current_offset += self.addtopage(canvas, elementlist)
