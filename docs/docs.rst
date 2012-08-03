@@ -233,7 +233,7 @@ class Element
     *onrender* is a reference to a function that is called when the Element is
     rendered.  It is actually passed to the Renderer (see below).  onrender is
     called with a single parameter, a reference to the Renderer.  Assuming you
-    called that parameter “obj”, the Element which spawned the Renderer is
+    called that parameter "obj", the Element which spawned the Renderer is
     accessible as obj.parent, and the Report as obj.parent.report.
 
     **Methods**

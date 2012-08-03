@@ -4,6 +4,9 @@ Changelog
 Unreleased Changes
 ------------------
 
+- Updated docs, added changelog generation using gitchangelog. [Chris
+  Gonnerman]
+
 - Removed .gitignore from .gitignore. [Chris Gonnerman]
 
 v1.6.2 (2012-07-29)

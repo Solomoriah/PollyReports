@@ -13,6 +13,115 @@
 <li><a href='index.html'>Home</a>
 <li><a href='tutorial.html'>Tutorial</a>
 <li><a href='docs.html'>Reference</a>
+<li><a href='changelog.html'>Changes</a>
 <li><a href='license.html'>License</a>
 </ul>
 
+<div class="document" id="changelog">
+<h1 class="title">Changelog</h1>
+
+<div class="section" id="unreleased-changes">
+<h1>Unreleased Changes</h1>
+<ul class="simple">
+<li>Updated docs, added changelog generation using gitchangelog. [Chris
+Gonnerman]</li>
+<li>Removed .gitignore from .gitignore. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-6-2-2012-07-29">
+<h1>v1.6.2 (2012-07-29)</h1>
+<ul class="simple">
+<li>Changed heuristic for group header orphan avoidance; now uses average
+detail height averaged with maximum detail height. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-6-2012-07-27">
+<h1>v1.6 (2012-07-27)</h1>
+<ul class="simple">
+<li>Group headers now use average detail band length to avoid at least
+some &quot;orphan&quot; header band situations. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-5-1-2012-07-12">
+<h1>v1.5.1 (2012-07-12)</h1>
+<ul class="simple">
+<li>Corrected sample programs to use &quot;align =&quot; instead of &quot;right =&quot; [Chris
+Gonnerman]</li>
+<li>Updated project status in setup.py. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-5-2012-06-22">
+<h1>v1.5 (2012-06-22)</h1>
+<ul class="simple">
+<li>Updated description in setup.py. [Chris Gonnerman]</li>
+<li>Updated to 1.5 for PyPI. [Chris Gonnerman]</li>
+<li>Now handles empty recordsets intelligently. [Chris Gonnerman]</li>
+<li>Updated documentation. [Chris Gonnerman]</li>
+<li>Page headers now generate with prevrow rather than row IF the page was
+forced by a group footer. [Chris Gonnerman]</li>
+<li>Minor docs.html update. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-4-2012-06-19">
+<h1>v1.4 (2012-06-19)</h1>
+<ul class="simple">
+<li>Updated version number for pypi; changed from right = 1 to align =
+&quot;right&quot; (and added support for &quot;center&quot; and &quot;align&quot; options); updated
+documentation. [Chris Gonnerman]</li>
+<li>Changed 'right = n' to 'align = left/right/center'; added
+Report.leftmargin. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-3-2012-06-18">
+<h1>v1.3 (2012-06-18)</h1>
+<ul class="simple">
+<li>Updated version number for PyPI. [Chris Gonnerman]</li>
+<li>Corrected handling of multiple group headers and footers; documented
+these changes also. [Chris Gonnerman]</li>
+<li>Updated tutorial.html. [Chris Gonnerman]</li>
+<li>Merge branch 'master' of <a class="reference external" href="https://github.com/Solomoriah/PollyReports">https://github.com/Solomoriah/PollyReports</a>.
+[Chris Gonnerman]</li>
+<li>Added tutorial files to repo. [Chris Gonnerman]</li>
+<li>Updated docs.rst for 1.2. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-2-2012-06-17">
+<h1>v1.2 (2012-06-17)</h1>
+<ul class="simple">
+<li>Updated version number in setup.py. [Chris Gonnerman]</li>
+<li>Separated test rig from main PollyReports.py source file; Enabled
+setting of band attributes in Report initialization. [Chris Gonnerman]</li>
+<li>Corrected issue with thick rules not being positioned correctly.
+[Chris Gonnerman]</li>
+<li>Corrected issues with Rule objects in child bands. [Chris Gonnerman]</li>
+<li>Added initial documentation. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-1-2012-06-16">
+<h1>v1.1 (2012-06-16)</h1>
+<ul class="simple">
+<li>Updated version in setup.py to make PyPI happy. [Chris Gonnerman]</li>
+</ul>
+</div>
+<div class="section" id="v1-0-2012-06-16">
+<h1>v1.0 (2012-06-16)</h1>
+<ul class="simple">
+<li>Corrected bug in setup.py. [Chris Gonnerman]</li>
+<li>Updated for PyPI distribution. [Chris Gonnerman]</li>
+<li>Added onrender() event support. [Chris Gonnerman]</li>
+<li>Added sysvar support to Elements (to support page numbering, mainly);
+also compacted test data for easier readability. [Chris Gonnerman]</li>
+<li>Added newpageafter option for Bands (newpagebefore was already
+present) [Chris Gonnerman]</li>
+<li>Child band support has been added. [Chris Gonnerman]</li>
+<li>Group headers and footers now implemented. [Chris Gonnerman]</li>
+<li>Added report footer handler. [Chris Gonnerman]</li>
+<li>Added better test data. [Chris Gonnerman]</li>
+<li>Added Rule class, which is both an Element and a Renderer (in terms of
+duck-typing); Corrected issue with band height calculation. [Chris
+Gonnerman]</li>
+<li>Updated README. [Chris Gonnerman]</li>
+<li>Added page header and footer support. [Chris Gonnerman]</li>
+</ul>
+</div>
+</div>
