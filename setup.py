@@ -41,7 +41,7 @@ setup(
     author_email = "chris@gonnerman.org",
     url = "http://newcenturycomputers.net/projects/pollyreports.html",
 
-    description = "Band-oriented PDF report generation from database query"
+    description = "Band-oriented PDF report generation from database query",
     long_description = long_description,
     py_modules = ["PollyReports"],
     keywords = "database report",
