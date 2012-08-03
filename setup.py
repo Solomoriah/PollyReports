@@ -4,8 +4,10 @@
 from distutils.core import setup
 
 long_description = """\
-Report Generation Module
-------------------------
+PollyReports.py
+---------------
+
+**Band-oriented PDF report generation from database query**
 
 PollyReports.py provides a set of classes for database report writing.  It
 assumes that you are using Reportlab to do PDF generation, but can work with
@@ -25,17 +27,21 @@ via [] operations, meaning mainly dict, list, and tuple types, i.e. the most
 common types of records returned by standard database modules.
 
 This version is written for Python 2.7, but should be easily adapted to Python 3.
+
+Development versions of this module may be found on Github_.
+
+.. _Github: https://github.com/Solomoriah/PollyReports
 """
 
 setup(
 
     name = "PollyReports",
-    version = "1.6.1",
+    version = "1.6.3",
     author = "Chris Gonnerman",
     author_email = "chris@gonnerman.org",
     url = "http://newcenturycomputers.net/projects/pollyreports.html",
 
-    description = "Report Generation Module",
+    description = "Band-oriented PDF report generation from database query"
     long_description = long_description,
     py_modules = ["PollyReports"],
     keywords = "database report",

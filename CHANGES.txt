@@ -1,0 +1,123 @@
+Changelog
+=========
+
+Unreleased Changes
+------------------
+
+- Removed .gitignore from .gitignore. [Chris Gonnerman]
+
+v1.6.2 (2012-07-29)
+-------------------
+
+- Changed heuristic for group header orphan avoidance; now uses average
+  detail height averaged with maximum detail height. [Chris Gonnerman]
+
+v1.6 (2012-07-27)
+-----------------
+
+- Group headers now use average detail band length to avoid at least
+  some "orphan" header band situations. [Chris Gonnerman]
+
+v1.5.1 (2012-07-12)
+-------------------
+
+- Corrected sample programs to use "align =" instead of "right =" [Chris
+  Gonnerman]
+
+- Updated project status in setup.py. [Chris Gonnerman]
+
+v1.5 (2012-06-22)
+-----------------
+
+- Updated description in setup.py. [Chris Gonnerman]
+
+- Updated to 1.5 for PyPI. [Chris Gonnerman]
+
+- Now handles empty recordsets intelligently. [Chris Gonnerman]
+
+- Updated documentation. [Chris Gonnerman]
+
+- Page headers now generate with prevrow rather than row IF the page was
+  forced by a group footer. [Chris Gonnerman]
+
+- Minor docs.html update. [Chris Gonnerman]
+
+v1.4 (2012-06-19)
+-----------------
+
+- Updated version number for pypi; changed from right = 1 to align =
+  "right" (and added support for "center" and "align" options); updated
+  documentation. [Chris Gonnerman]
+
+- Changed 'right = n' to 'align = left/right/center'; added
+  Report.leftmargin. [Chris Gonnerman]
+
+v1.3 (2012-06-18)
+-----------------
+
+- Updated version number for PyPI. [Chris Gonnerman]
+
+- Corrected handling of multiple group headers and footers; documented
+  these changes also. [Chris Gonnerman]
+
+- Updated tutorial.html. [Chris Gonnerman]
+
+- Merge branch 'master' of https://github.com/Solomoriah/PollyReports.
+  [Chris Gonnerman]
+
+- Added tutorial files to repo. [Chris Gonnerman]
+
+- Updated docs.rst for 1.2. [Chris Gonnerman]
+
+v1.2 (2012-06-17)
+-----------------
+
+- Updated version number in setup.py. [Chris Gonnerman]
+
+- Separated test rig from main PollyReports.py source file; Enabled
+  setting of band attributes in Report initialization. [Chris Gonnerman]
+
+- Corrected issue with thick rules not being positioned correctly.
+  [Chris Gonnerman]
+
+- Corrected issues with Rule objects in child bands. [Chris Gonnerman]
+
+- Added initial documentation. [Chris Gonnerman]
+
+v1.1 (2012-06-16)
+-----------------
+
+- Updated version in setup.py to make PyPI happy. [Chris Gonnerman]
+
+v1.0 (2012-06-16)
+-----------------
+
+- Corrected bug in setup.py. [Chris Gonnerman]
+
+- Updated for PyPI distribution. [Chris Gonnerman]
+
+- Added onrender() event support. [Chris Gonnerman]
+
+- Added sysvar support to Elements (to support page numbering, mainly);
+  also compacted test data for easier readability. [Chris Gonnerman]
+
+- Added newpageafter option for Bands (newpagebefore was already
+  present) [Chris Gonnerman]
+
+- Child band support has been added. [Chris Gonnerman]
+
+- Group headers and footers now implemented. [Chris Gonnerman]
+
+- Added report footer handler. [Chris Gonnerman]
+
+- Added better test data. [Chris Gonnerman]
+
+- Added Rule class, which is both an Element and a Renderer (in terms of
+  duck-typing); Corrected issue with band height calculation. [Chris
+  Gonnerman]
+
+- Updated README. [Chris Gonnerman]
+
+- Added page header and footer support. [Chris Gonnerman]
+
+

@@ -4,6 +4,12 @@ rst2html --link-stylesheet docs.rst |
 sed '1,/<body>/d
 /<\/body>/,$d' > docs.src
 
+(cd ..; gitchangelog > CHANGES.txt)
+
+rst2html --link-stylesheet ../CHANGES.txt | 
+sed '1,/<body>/d
+/<\/body>/,$d' > changelog.src
+
 echo "Formatting..."
 
 for i in *.src
