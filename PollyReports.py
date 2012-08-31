@@ -151,7 +151,10 @@ class SumElement(Element):
         return rc
 
     def summarize(self, row):
-        self.summary += Element.getvalue(self, row)
+        v = Element.getvalue(self, row)
+        if v is None:
+            v = 0
+        self.summary += v
 
 
 class Rule:
