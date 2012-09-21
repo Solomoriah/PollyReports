@@ -297,6 +297,8 @@ class Band:
         for element in self.elements:
             if hasattr(element, "summarize"):
                 element.summarize(row)
+        for band in self.childbands:
+            band.summarize(row)
 
     # these methods are used only in group headers and footers
 
