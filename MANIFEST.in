@@ -3,3 +3,4 @@ include *.rst
 include *.html
 include LICENSE
 include *.py
+include *.png

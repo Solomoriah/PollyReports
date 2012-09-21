@@ -1,28 +1,34 @@
 # PollyReports
 # Copyright 2012 Chris Gonnerman
 # All rights reserved.
-# 
+#
 # BSD 2-Clause License
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # Redistributions of source code must retain the above copyright notice, this
 # list of conditions and the following disclaimer.  Redistributions in binary
 # form must reproduce the above copyright notice, this list of conditions and
-# the following disclaimer in the documentation and/or other materials
-# provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# the following disclaimer in the documentation and/or other materials provided
+# with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+###############################################################################
+# Thanks to Jose Jachuf, who provided the titleband implementation and
+# the initial version of the Image class.
+
 
 """
     PollyReports.py
@@ -190,14 +196,72 @@ class Rule:
         return self
 
 
+class ImageRenderer:
+
+    def __init__(self, parent, pos, width, height, text, onrender):
+        self.parent = parent
+        self.pos = pos
+        self.width = width
+        self.height = height
+        self.text = text
+        self.onrender = onrender
+
+    def render(self, offset, canvas):
+        if self.onrender is not None:
+            self.onrender(self)
+        leftmargin = self.parent.report.leftmargin
+        canvas.drawImage(self.text,
+                self.pos[0] + leftmargin,
+                -1 * (self.pos[1]+self.height+offset),
+                width = self.width,
+                height = self.height,
+                mask = "auto")
+
+    def applyoffset(self, offset):
+        self.pos = (self.pos[0], self.pos[1] + offset)
+        return self
+
+
+class Image:
+
+    def __init__(self, pos = None, width = None, height = None,
+                 text = None, key = None, getvalue = None,
+                 onrender = None):
+        self.pos = pos
+        self.width = width
+        self.height = height
+        self.text = text
+        self.key = key
+        self._getvalue = getvalue
+        self.onrender = onrender
+
+        self.report = None
+
+    def gettext(self, row):
+        return self.getvalue(row)
+
+    def getvalue(self, row):
+        if self._getvalue is not None:
+            return self._getvalue(row)
+        if self.key is not None:
+            return row[self.key]
+        if self.text is not None:
+            return self.text
+        return ""
+
+    def generate(self, row):
+        return ImageRenderer(self, self.pos, self.width, self.height,
+            self.gettext(row), self.onrender)
+
+
 class Band:
 
     # key, getvalue and previousvalue are used only for group headers and footers
     # newpagebefore/after do not apply to detail bands, page headers, or page footers, obviously
     # newpageafter also does not apply to the report footer
 
-    def __init__(self, elements = None, childbands = None, 
-                 key = None, getvalue = None, 
+    def __init__(self, elements = None, childbands = None,
+                 key = None, getvalue = None,
                  newpagebefore = 0, newpageafter = 0):
         self.elements = elements
         self.key = key
@@ -254,8 +318,10 @@ class Band:
 class Report:
 
     def __init__(self, datasource = None,
-            detailband = None, pageheader = None, pagefooter = None,
-            reportfooter = None, groupheaders = None, groupfooters = None):
+            titleband = None, detailband = None,
+            pageheader = None, pagefooter = None,
+            reportheader = None, reportfooter = None,
+            groupheaders = None, groupfooters = None):
         self.datasource = datasource
         self.pagesize = None
         self.topmargin = 36
@@ -263,10 +329,12 @@ class Report:
         self.leftmargin = 36
 
         # bands
+        self.titleband = titleband
         self.detailband = detailband
         self.pageheader = pageheader
         self.pagefooter = pagefooter
         self.reportfooter = reportfooter
+        self.reportheader = reportheader
         self.groupheaders = groupheaders or []
         self.groupfooters = groupfooters or []
 
@@ -285,8 +353,14 @@ class Report:
         self.endofpage = self.pagesize[1] - self.bottommargin
         canvas.translate(0, self.pagesize[1])
         self.current_offset = self.topmargin
+        if self.titleband and self.pagenumber == 1:
+            elementlist = self.titleband.generate(row)
+            self.current_offset += self.addtopage(canvas, elementlist)
         if self.pageheader:
             elementlist = self.pageheader.generate(row)
+            self.current_offset += self.addtopage(canvas, elementlist)
+        if self.reportheader and self.pagenumber == 1:
+            elementlist = self.reportheader.generate(row)
             self.current_offset += self.addtopage(canvas, elementlist)
         if self.pagefooter:
             elementlist = self.pagefooter.generate(row)
@@ -309,9 +383,10 @@ class Report:
     def generate(self, canvas):
 
         # every Element in every Band needs a reference to this Report
-        self.setreference([ 
-            self.detailband, self.pageheader, 
-            self.pagefooter, self.reportfooter,
+        self.setreference([
+            self.titleband, self.detailband,
+            self.pageheader, self.pagefooter,
+            self.reportheader, self.reportfooter,
         ])
         self.setreference(self.groupheaders)
         self.setreference(self.groupfooters)

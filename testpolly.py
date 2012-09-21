@@ -49,11 +49,22 @@ rpt.detailband = Band([
         Element((72, 0), ("Helvetica", 11), key = "phone"),
     ]),
 ])
+rpt.titleband = Band([
+    Element((36, 0), ("Times-Bold", 20), text = "Title Band"),
+    Element((36, 22), ("Helvetica", 12), text = "Appears before page header on first page"),
+    Image((400, 0), 64, 64, text = "typewriter.png"),
+    Rule((36, 66), 7.5*72, thickness = 2),
+])
 rpt.pageheader = Band([
     Element((36, 0), ("Times-Bold", 20), text = "Page Header", onrender = pagecount),
     Element((36, 24), ("Helvetica", 12), text = "Name"),
     Element((400, 24), ("Helvetica", 12), text = "Amount", align = "right"),
     Rule((36, 42), 7.5*72, thickness = 2),
+])
+rpt.reportheader = Band([
+    Element((36, 0), ("Times-Bold", 20), text = "Report Header"),
+    Element((36, 22), ("Helvetica", 12), text = "Appears after page header on first page"),
+    Rule((36, 36), 7.5*72, thickness = 2),
 ])
 rpt.pagefooter = Band([
     Element((72*8, 0), ("Times-Bold", 20), text = "Page Footer", align = "right"),

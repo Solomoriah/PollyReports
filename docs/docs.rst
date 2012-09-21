@@ -60,6 +60,10 @@ class Report
 
     If the datasource is empty, no output is generated.
 
+    *titleband* is a Band object which is printed before the page header
+    on the very first page of the report.  When the titleband is generated,
+    it receives the row of data that will appear first on the page.
+
     *detailband* should be initialized to a Band object (see below) which will
     be generated once per row in the data source.  It is acceptable for the
     detail band to be None, which means no detail band will be rendered for
@@ -76,6 +80,10 @@ class Report
     *pagefooter* is a Band object which is printed at the bottom of each page.
     When the pagefooter Band is generated, it receives the row of data that
     will appear as the first on the page.
+
+    *reportheader* is a Band object which is printed after the page header
+    on the very first page of the report.  When the reportheader is generated,
+    it receives the row of data that will appear first on the page.
 
     *reportfooter* is a Band object which is printed at the very end of the
     report.  When the reportfooter Band is generated, it receives the row of
@@ -268,6 +276,30 @@ class Renderer
     of Elements.  As they are entirely internal, they will not be described in
     any particular detail here; if you need to understand more fully how they
     work, please consult the source code.
+
+class Image
+-----------
+
+    ``imageelement = Image(pos, width, height, text = None, key = None,
+    getvalue = None, onrender = None)``
+
+    An Image object works like an Element, but instead of printing text, it
+    prints an image.  The text and key parameters work exactly like the same
+    parameters to an Element object, but the resulting text is treated like
+    a filename (and must point to an existing image file which is reachable
+    by the application).  The getvalue parameter defines a function, similar
+    to the same parameter in the Element object, but this function may return
+    either a filename or a Reportlab ImageReader object, as documented for
+    the drawElement() method in the Reportlab documentation.  Note that if a
+    non-Reportlab canvas-like object is used, this may not apply.
+
+class ImageRenderer
+-------------------
+
+    ImageRenderers are internal objects used by PollyReports to print out the
+    values of Image objects.  As they are entirely internal, they will not be
+    described in any particular detail here; if you need to understand more
+    fully how they work, please consult the source code.
 
 class Rule
 ----------
