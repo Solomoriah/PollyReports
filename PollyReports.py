@@ -1,3 +1,5 @@
+#coding=utf-8
+
 # PollyReports
 # Copyright 2012 Chris Gonnerman
 # All rights reserved.
@@ -27,7 +29,7 @@
 
 ###############################################################################
 # Thanks to Jose Jachuf, who provided the titleband implementation and
-# the initial version of the Image class.
+# the initial version of the Image class, and who implemented Unicode support.
 
 
 """
@@ -50,7 +52,7 @@
 """
 
 
-class Renderer:
+class Renderer(object):
 
     def __init__(self, parent, pos, font, text, align, height, onrender):
         self.parent = parent
@@ -95,7 +97,7 @@ class Renderer:
         return self
 
 
-class Element:
+class Element(object):
 
     # text refers to a label;
     # key is a value used to look up data in the record;
@@ -136,7 +138,7 @@ class Element:
         if self.key is not None:
             return row[self.key]
         if self.text is not None:
-            return self.text
+            return self.text.encode('utf8')
         if self.sysvar is not None:
             return getattr(self.report, self.sysvar)
         return None
@@ -163,7 +165,7 @@ class SumElement(Element):
         self.summary += v
 
 
-class Rule:
+class Rule(object):
 
     def __init__(self, pos, width, thickness = 1, report = None):
         self.pos = pos
@@ -196,7 +198,7 @@ class Rule:
         return self
 
 
-class ImageRenderer:
+class ImageRenderer(object):
 
     def __init__(self, parent, pos, width, height, text, onrender):
         self.parent = parent
@@ -222,7 +224,7 @@ class ImageRenderer:
         return self
 
 
-class Image:
+class Image(object):
 
     def __init__(self, pos = None, width = None, height = None,
                  text = None, key = None, getvalue = None,
@@ -254,7 +256,7 @@ class Image:
             self.gettext(row), self.onrender)
 
 
-class Band:
+class Band(object):
 
     # key, getvalue and previousvalue are used only for group headers and footers
     # newpagebefore/after do not apply to detail bands, page headers, or page footers, obviously
@@ -317,7 +319,7 @@ class Band:
         return None
 
 
-class Report:
+class Report(object):
 
     def __init__(self, datasource = None,
             titleband = None, detailband = None,
