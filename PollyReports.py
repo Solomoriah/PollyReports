@@ -60,9 +60,14 @@ class Renderer(object):
         self.font = font
         self.align = align
         self.lineheight = height
-        self.height = height * len(self.lines)
         self.onrender = onrender
         self.width = width
+
+        # Dirty tricks here.
+        # We could use canvas.stringWidth IF we had a canvas at this
+        # point, but we don't.  So, we make the rash assumption that
+        # characters in the current font are 2/3 as wide as they are
+        # tall (which is probably BS).
 
         if self.width is None:
             self.lines = text.split("\n")
@@ -76,7 +81,7 @@ class Renderer(object):
                     if not curline:
                         curline = [ word ]
                     else:
-                        if canvas.stringWidth(" ".join(curline + [ word ]), font[0], font[1]) > width:
+                        if self.calcwidth(" ".join(curline + [ word ])) > width:
                             lines.append(" ".join(curline))
                             curline = [ word ]
                         else:
@@ -85,6 +90,11 @@ class Renderer(object):
                     lines.append(" ".join(curline))
                     curline = []
             self.lines = lines
+
+        self.height = height * len(self.lines)
+
+    def calcwidth(self, s):
+        return len(s) * int(self.font[1] * 2 / 3 + 0.5)
 
     def render(self, offset, canvas):
         if self.onrender is not None:
