@@ -54,15 +54,37 @@
 
 class Renderer(object):
 
-    def __init__(self, parent, pos, font, text, align, height, onrender):
+    def __init__(self, parent, pos, font, text, align, height, onrender, width):
         self.parent = parent
         self.pos = pos
         self.font = font
-        self.lines = text.split("\n")
         self.align = align
         self.lineheight = height
         self.height = height * len(self.lines)
         self.onrender = onrender
+        self.width = width
+
+        if self.width is None:
+            self.lines = text.split("\n")
+        else:
+            paragraphs = text.split("\n")
+            lines = []
+            curline = []
+            for para in paragraphs:
+                words = para.split()
+                for word in words:
+                    if not curline:
+                        curline = [ word ]
+                    else:
+                        if canvas.stringWidth(" ".join(curline + [ word ]), font[0], font[1]) > width:
+                            lines.append(" ".join(curline))
+                            curline = [ word ]
+                        else:
+                            curline.append(word)
+                if curline:
+                    lines.append(" ".join(curline))
+                    curline = []
+            self.lines = lines
 
     def render(self, offset, canvas):
         if self.onrender is not None:
@@ -106,9 +128,10 @@ class Element(object):
     # all three should not be submitted at the same time,
     #   but if they are, getvalue overrides key overrides text.
 
-    def __init__(self, pos = None, font = None,
-                 text = None, key = None, getvalue = None, sysvar = None,
-                 align = "left", format = str, leading = None, onrender = None):
+    def __init__(self, pos = None, font = None, text = None,
+                 key = None, getvalue = None, sysvar = None,
+                 align = "left", format = str, width = None,
+                 leading = None, onrender = None):
         self.text = text
         self.key = key
         self._getvalue = getvalue
@@ -117,6 +140,7 @@ class Element(object):
         self.font = font
         self._format = format
         self.align = align
+        self.width = width
         if leading is not None:
             self.leading = leading
         else:
@@ -148,7 +172,7 @@ class Element(object):
 
     def generate(self, row):
         return Renderer(self, self.pos, self.font, self.gettext(row), self.align,
-            self.font[1] + self.leading, self.onrender)
+            self.font[1] + self.leading, self.onrender, self.width)
 
 
 class SumElement(Element):
