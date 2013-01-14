@@ -422,7 +422,7 @@ class Report(object):
                 for i in range(lastchanged+1):
                     elementlist = self.groupfooters[i].generate(prevrow)
                     if self.groupfooters[i].newpagebefore \
-                    or (self.current_offset + elementlist[0] + self._avg_detail_ht) >= self.endofpage:
+                    or (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, prevrow)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupfooters[i].newpageafter:
@@ -439,7 +439,7 @@ class Report(object):
                 for i in range(firstchanged, len(self.groupheaders)):
                     elementlist = self.groupheaders[i].generate(row)
                     if self.groupheaders[i].newpagebefore \
-                    or (self.current_offset + elementlist[0]) >= self.endofpage:
+                    or (self.current_offset + elementlist[0] + self._avg_detail_ht) >= self.endofpage:
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupheaders[i].newpageafter:
