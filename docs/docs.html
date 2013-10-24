@@ -65,6 +65,9 @@ can be indexed with [].  A standard database cursor yielding
 lists, tuples, or dicts is the expected case.  When Report.generate()
 is called, this datasource will be consumed one row at a time.</p>
 <p>If the datasource is empty, no output is generated.</p>
+<p><em>titleband</em> is a Band object which is printed before the page header
+on the very first page of the report.  When the titleband is generated,
+it receives the row of data that will appear first on the page.</p>
 <p><em>detailband</em> should be initialized to a Band object (see below) which will
 be generated once per row in the data source.  It is acceptable for the
 detail band to be None, which means no detail band will be rendered for
@@ -79,6 +82,9 @@ will appear as the first on the page.</p>
 <p><em>pagefooter</em> is a Band object which is printed at the bottom of each page.
 When the pagefooter Band is generated, it receives the row of data that
 will appear as the first on the page.</p>
+<p><em>reportheader</em> is a Band object which is printed after the page header
+on the very first page of the report.  When the reportheader is generated,
+it receives the row of data that will appear first on the page.</p>
 <p><em>reportfooter</em> is a Band object which is printed at the very end of the
 report.  When the reportfooter Band is generated, it receives the row of
 data that was last processed.</p>
@@ -238,6 +244,30 @@ Renderers are internal objects used by PollyReports to print out the values
 of Elements.  As they are entirely internal, they will not be described in
 any particular detail here; if you need to understand more fully how they
 work, please consult the source code.</blockquote>
+</div>
+<div class="section" id="class-image">
+<h2>class Image</h2>
+<blockquote>
+<p><tt class="docutils literal">imageelement = Image(pos, width, height, text = None, key = None,
+getvalue = None, onrender = None)</tt></p>
+<p>An Image object works like an Element, but instead of printing text, it
+prints an image.  The text and key parameters work exactly like the same
+parameters to an Element object, but the resulting text is treated like
+a filename (and must point to an existing image file which is reachable
+by the application).  The getvalue parameter defines a function, similar
+to the same parameter in the Element object, but this function may return
+either a filename or a Reportlab ImageReader object, as documented for
+the drawElement() method in the Reportlab documentation.  Note that if a
+non-Reportlab canvas-like object is used, this may not apply.</p>
+</blockquote>
+</div>
+<div class="section" id="class-imagerenderer">
+<h2>class ImageRenderer</h2>
+<blockquote>
+ImageRenderers are internal objects used by PollyReports to print out the
+values of Image objects.  As they are entirely internal, they will not be
+described in any particular detail here; if you need to understand more
+fully how they work, please consult the source code.</blockquote>
 </div>
 <div class="section" id="class-rule">
 <h2>class Rule</h2>

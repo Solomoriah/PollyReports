@@ -1,15 +1,29 @@
 Changelog
 =========
 
-Unreleased Changes
-------------------
+v1.6.5 (2012-09-21)
+-------------------
+
+- Added titleband and reportheader to Report object; Added Image and
+  ImageRenderer classes; Updated reference documentation to include all
+  these features. [Chris Gonnerman]
+
+- Changed SumElement.summarize to treat None as integer 0. [Chris
+  Gonnerman]
+
+- Fixed missing comma in setup.py. [Chris Gonnerman]
+
+v1.6.3 (2012-08-03)
+-------------------
+
+- Many minor documentation updates. [Chris Gonnerman]
 
 - Updated docs, added changelog generation using gitchangelog. [Chris
   Gonnerman]
 
 - Removed .gitignore from .gitignore. [Chris Gonnerman]
 
-v1.6.2 (2012-07-29)
+v1.6.1 (2012-07-29)
 -------------------
 
 - Changed heuristic for group header orphan avoidance; now uses average
