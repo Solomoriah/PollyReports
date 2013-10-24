@@ -418,6 +418,7 @@ class Report(object):
                 for element in band.elements:
                     element.report = self
                 self.setreference(band.childbands)
+                self.setreference(band.additionalbands)
 
     def generate(self, canvas):
 
