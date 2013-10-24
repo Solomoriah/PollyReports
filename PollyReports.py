@@ -297,7 +297,7 @@ class Band(object):
     # newpageafter also does not apply to the report footer
 
     def __init__(self, elements = None, childbands = None,
-                 key = None, getvalue = None,
+                 additionalbands = None, key = None, getvalue = None,
                  newpagebefore = 0, newpageafter = 0):
         self.elements = elements
         self.key = key
@@ -306,6 +306,7 @@ class Band(object):
         self.newpagebefore = newpagebefore
         self.newpageafter = newpageafter
         self.childbands = childbands or []
+        self.additionalbands = additionalbands or []
 
     # generating a band creates a list of Renderer objects.
     # the first element of the list is a single integer
@@ -447,6 +448,11 @@ class Report(object):
                     if (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
+                    for aband in band.additionalbands:
+                        elementlist = aband.generate(row)
+                        if (self.current_offset + elementlist[0]) >= self.endofpage:
+                            self.newpage(canvas, row)
+                        self.current_offset += self.addtopage(canvas, elementlist)
 
             lastchanged = None
             for i in range(len(self.groupfooters)):
