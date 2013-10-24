@@ -1,3 +1,5 @@
+#coding=utf-8
+
 # PollyReports
 # Copyright 2012 Chris Gonnerman
 # All rights reserved.
@@ -27,7 +29,7 @@
 
 ###############################################################################
 # Thanks to Jose Jachuf, who provided the titleband implementation and
-# the initial version of the Image class.
+# the initial version of the Image class, and who implemented Unicode support.
 
 
 """
@@ -50,17 +52,49 @@
 """
 
 
-class Renderer:
+class Renderer(object):
 
-    def __init__(self, parent, pos, font, text, align, height, onrender):
+    def __init__(self, parent, pos, font, text, align, height, onrender, width):
         self.parent = parent
         self.pos = pos
         self.font = font
-        self.lines = text.split("\n")
         self.align = align
         self.lineheight = height
-        self.height = height * len(self.lines)
         self.onrender = onrender
+        self.width = width
+
+        # Dirty tricks here.
+        # We could use canvas.stringWidth IF we had a canvas at this
+        # point, but we don't.  So, we make the rash assumption that
+        # characters in the current font are 2/3 as wide as they are
+        # tall (which is probably BS).
+
+        if self.width is None:
+            self.lines = text.split("\n")
+        else:
+            paragraphs = text.split("\n")
+            lines = []
+            curline = []
+            for para in paragraphs:
+                words = para.split()
+                for word in words:
+                    if not curline:
+                        curline = [ word ]
+                    else:
+                        if self.calcwidth(" ".join(curline + [ word ])) > width:
+                            lines.append(" ".join(curline))
+                            curline = [ word ]
+                        else:
+                            curline.append(word)
+                if curline:
+                    lines.append(" ".join(curline))
+                    curline = []
+            self.lines = lines
+
+        self.height = height * len(self.lines)
+
+    def calcwidth(self, s):
+        return len(s) * int(self.font[1] * 2 / 3 + 0.5)
 
     def render(self, offset, canvas):
         if self.onrender is not None:
@@ -95,7 +129,7 @@ class Renderer:
         return self
 
 
-class Element:
+class Element(object):
 
     # text refers to a label;
     # key is a value used to look up data in the record;
@@ -104,9 +138,10 @@ class Element:
     # all three should not be submitted at the same time,
     #   but if they are, getvalue overrides key overrides text.
 
-    def __init__(self, pos = None, font = None,
-                 text = None, key = None, getvalue = None, sysvar = None,
-                 align = "left", format = str, leading = None, onrender = None):
+    def __init__(self, pos = None, font = None, text = None,
+                 key = None, getvalue = None, sysvar = None,
+                 align = "left", format = str, width = None,
+                 leading = None, onrender = None):
         self.text = text
         self.key = key
         self._getvalue = getvalue
@@ -115,6 +150,7 @@ class Element:
         self.font = font
         self._format = format
         self.align = align
+        self.width = width
         if leading is not None:
             self.leading = leading
         else:
@@ -136,7 +172,7 @@ class Element:
         if self.key is not None:
             return row[self.key]
         if self.text is not None:
-            return self.text
+            return self.text.encode('utf8')
         if self.sysvar is not None:
             return getattr(self.report, self.sysvar)
         return None
@@ -146,7 +182,7 @@ class Element:
 
     def generate(self, row):
         return Renderer(self, self.pos, self.font, self.gettext(row), self.align,
-            self.font[1] + self.leading, self.onrender)
+            self.font[1] + self.leading, self.onrender, self.width)
 
 
 class SumElement(Element):
@@ -163,7 +199,7 @@ class SumElement(Element):
         self.summary += v
 
 
-class Rule:
+class Rule(object):
 
     def __init__(self, pos, width, thickness = 1, report = None):
         self.pos = pos
@@ -196,7 +232,7 @@ class Rule:
         return self
 
 
-class ImageRenderer:
+class ImageRenderer(object):
 
     def __init__(self, parent, pos, width, height, text, onrender):
         self.parent = parent
@@ -222,7 +258,7 @@ class ImageRenderer:
         return self
 
 
-class Image:
+class Image(object):
 
     def __init__(self, pos = None, width = None, height = None,
                  text = None, key = None, getvalue = None,
@@ -254,7 +290,7 @@ class Image:
             self.gettext(row), self.onrender)
 
 
-class Band:
+class Band(object):
 
     # key, getvalue and previousvalue are used only for group headers and footers
     # newpagebefore/after do not apply to detail bands, page headers, or page footers, obviously
@@ -297,6 +333,8 @@ class Band:
         for element in self.elements:
             if hasattr(element, "summarize"):
                 element.summarize(row)
+        for band in self.childbands:
+            band.summarize(row)
 
     # these methods are used only in group headers and footers
 
@@ -315,7 +353,7 @@ class Band:
         return None
 
 
-class Report:
+class Report(object):
 
     def __init__(self, datasource = None,
             titleband = None, detailband = None,
@@ -418,7 +456,7 @@ class Report:
                 for i in range(lastchanged+1):
                     elementlist = self.groupfooters[i].generate(prevrow)
                     if self.groupfooters[i].newpagebefore \
-                    or (self.current_offset + elementlist[0] + self._avg_detail_ht) >= self.endofpage:
+                    or (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, prevrow)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupfooters[i].newpageafter:
@@ -435,7 +473,7 @@ class Report:
                 for i in range(firstchanged, len(self.groupheaders)):
                     elementlist = self.groupheaders[i].generate(row)
                     if self.groupheaders[i].newpagebefore \
-                    or (self.current_offset + elementlist[0]) >= self.endofpage:
+                    or (self.current_offset + elementlist[0] + self._avg_detail_ht) >= self.endofpage:
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupheaders[i].newpageafter:
