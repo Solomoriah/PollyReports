@@ -465,6 +465,11 @@ class Report(object):
                     or (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, prevrow)
                     self.current_offset += self.addtopage(canvas, elementlist)
+                    for aband in self.groupfooters[i].additionalbands:
+                        elementlist = aband.generate(row)
+                        if (self.current_offset + elementlist[0]) >= self.endofpage:
+                            self.newpage(canvas, row)
+                        self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupfooters[i].newpageafter:
                         self.current_offset = self.pagesize[1]
             for band in self.groupfooters:
@@ -482,6 +487,11 @@ class Report(object):
                     or (self.current_offset + elementlist[0] + self._avg_detail_ht) >= self.endofpage:
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
+                    for aband in self.groupheaders[i].additionalbands:
+                        elementlist = aband.generate(row)
+                        if (self.current_offset + elementlist[0]) >= self.endofpage:
+                            self.newpage(canvas, row)
+                        self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupheaders[i].newpageafter:
                         self.current_offset = self.pagesize[1]
 
@@ -494,6 +504,11 @@ class Report(object):
                 if (self.current_offset + elementlist[0]) >= self.endofpage:
                     self.newpage(canvas, row)
                 self.current_offset += self.addtopage(canvas, elementlist)
+                for aband in self.detailband.additionalbands:
+                    elementlist = aband.generate(row)
+                    if (self.current_offset + elementlist[0]) >= self.endofpage:
+                        self.newpage(canvas, row)
+                    self.current_offset += self.addtopage(canvas, elementlist)
 
             if self.reportfooter:
                 self.reportfooter.summarize(row)
@@ -506,6 +521,11 @@ class Report(object):
                 if band.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                     self.newpage(canvas, row)
                 self.current_offset += self.addtopage(canvas, elementlist)
+                for aband in band.additionalbands:
+                    elementlist = aband.generate(row)
+                    if (self.current_offset + elementlist[0]) >= self.endofpage:
+                        self.newpage(canvas, row)
+                    self.current_offset += self.addtopage(canvas, elementlist)
                 if band.newpageafter:
                     self.current_offset = self.pagesize[1]
 
@@ -514,6 +534,11 @@ class Report(object):
                 if self.reportfooter.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                     self.newpage(canvas, row)
                 self.current_offset += self.addtopage(canvas, elementlist)
+                for aband in band.additionalbands:
+                    elementlist = aband.generate(row)
+                    if (self.current_offset + elementlist[0]) >= self.endofpage:
+                        self.newpage(canvas, row)
+                    self.current_offset += self.addtopage(canvas, elementlist)
 
         canvas.showPage()
 
