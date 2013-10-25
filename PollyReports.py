@@ -336,6 +336,8 @@ class Band(object):
                 element.summarize(row)
         for band in self.childbands:
             band.summarize(row)
+        for band in self.additionalbands:
+            band.summarize(row)
 
     # these methods are used only in group headers and footers
 
