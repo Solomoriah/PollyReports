@@ -537,7 +537,7 @@ class Report(object):
                 if self.reportfooter.newpagebefore or (self.current_offset + elementlist[0]) >= self.endofpage:
                     self.newpage(canvas, row)
                 self.current_offset += self.addtopage(canvas, elementlist)
-                for aband in band.additionalbands:
+                for aband in self.reportfooter.additionalbands:
                     elementlist = aband.generate(row)
                     if (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, row)
