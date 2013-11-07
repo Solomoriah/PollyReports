@@ -382,6 +382,8 @@ class Report(object):
         self.pagenumber = 0
         self.rownumber = 0
 
+        self.rowfunc = None
+
         # private
         self._sum_detail_ht = 0
         self._avg_detail_ht = 0
@@ -441,6 +443,12 @@ class Report(object):
         firstrow = 1
 
         for row in self.datasource:
+
+            if self.rowfunc is not None:
+                row = self.rowfunc(row)
+
+            if row is None:
+                continue
 
             self.rownumber += 1
 
