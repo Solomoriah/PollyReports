@@ -36,7 +36,7 @@ Development versions of this module may be found on Github_.
 setup(
 
     name = "PollyReports",
-    version = "1.7.6",
+    version = "1.7.7",
     author = "Chris Gonnerman",
     author_email = "chris@gonnerman.org",
     url = "http://newcenturycomputers.net/projects/pollyreports.html",
