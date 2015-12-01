@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v1.7.7 (2015-12-01)
+-------------------
+
+- Removed Unicode encoding from Element class (as inserted by Jose Jachuf in
+  v1.6.7) which caused issues for Python 3.  Added Element.text_conversion
+  variable to contain a reference to the function for converting self.text
+  for output; this variable can be used to restore Jose's behavior with a
+  single line of code, as described in the comments for the Element class.
+  [Chris Gonnerman]
+
 v1.6.5 (2012-09-21)
 -------------------
 

@@ -1,7 +1,7 @@
 #coding=utf-8
 
 # PollyReports
-# Copyright 2012 Chris Gonnerman
+# Copyright 2012-2015 Chris Gonnerman
 # All rights reserved.
 #
 # BSD 2-Clause License
@@ -131,6 +131,8 @@ class Renderer(object):
 
 class Element(object):
 
+    text_conversion = str
+
     # text refers to a label;
     # key is a value used to look up data in the record;
     # getvalue is a function that accepts the row as a parameter
@@ -166,13 +168,28 @@ class Element(object):
             return ""
         return self._format(value)
 
+    # prior to 1.6.7, self.text was returned blindly;
+    # Jose Jachuf changed the behavior to encode as
+    # utf8.  this evidently broke other people's code,
+    # particularly in Python 3.  starting in 1.7.7,
+    # a class variable text_conversion (found above,
+    # initialized to str) determines how self.text
+    # is returned.  those wanting Jose's defined
+    # behavior should do this:
+    #
+    #   import PollyReports
+    #   PollyReports.Element.text_conversion = \
+    #       lambda x: x.encode('utf8')
+    #
+    # thus restoring unicode-agnosticism to this module.
+
     def getvalue(self, row):
         if self._getvalue is not None:
             return self._getvalue(row)
         if self.key is not None:
             return row[self.key]
         if self.text is not None:
-            return self.text.encode('utf8')
+            return Element.text_conversion(self.text)
         if self.sysvar is not None:
             return getattr(self.report, self.sysvar)
         return None
