@@ -1,7 +1,7 @@
 #coding=utf-8
 
 # PollyReports
-# Copyright 2012-2015 Chris Gonnerman
+# Copyright 2012-2018 Chris Gonnerman
 # All rights reserved.
 #
 # BSD 2-Clause License
@@ -379,12 +379,19 @@ class Report(object):
             titleband = None, detailband = None,
             pageheader = None, pagefooter = None,
             reportheader = None, reportfooter = None,
-            groupheaders = None, groupfooters = None):
+            groupheaders = None, groupfooters = None,
+            onrow = None, onnewpage = None, ondetail = None):
+
         self.datasource = datasource
         self.pagesize = None
         self.topmargin = 36
         self.bottommargin = 36
         self.leftmargin = 36
+
+        # events
+        self.onrow = onrow
+        self.onnewpage = onnewpage
+        self.ondetail = ondetail
 
         # bands
         self.titleband = titleband
@@ -396,10 +403,11 @@ class Report(object):
         self.groupheaders = groupheaders or []
         self.groupfooters = groupfooters or []
 
+        self.footerelementlist = []
+
         self.pagenumber = 0
         self.rownumber = 0
-
-        self.rowfunc = None
+        self.currentrow = {}
 
         # private
         self._sum_detail_ht = 0
@@ -407,7 +415,11 @@ class Report(object):
         self._max_detail_ht = 0
 
     def newpage(self, canvas, row):
+        if self.onnewpage:
+            self.onnewpage(self)
         if self.pagenumber:
+            for el in self.footerelementlist[1:]:
+                el.render(self.endofpage, canvas)
             canvas.showPage()
         self.pagenumber += 1
         self.endofpage = self.pagesize[1] - self.bottommargin
@@ -423,10 +435,8 @@ class Report(object):
             elementlist = self.reportheader.generate(row)
             self.current_offset += self.addtopage(canvas, elementlist)
         if self.pagefooter:
-            elementlist = self.pagefooter.generate(row)
+            self.footerelementlist = self.pagefooter.generate(row)
             self.endofpage = self.pagesize[1] - self.bottommargin - elementlist[0]
-            for el in elementlist[1:]:
-                el.render(self.endofpage, canvas)
 
     def addtopage(self, canvas, elementlist):
         for el in elementlist[1:]:
@@ -461,8 +471,10 @@ class Report(object):
 
         for row in self.datasource:
 
-            if self.rowfunc is not None:
-                row = self.rowfunc(row)
+            self.currentrow = row
+
+            if self.onrow is not None:
+                self.currentrow = row = self.onrow(row)
 
             if row is None:
                 continue
@@ -531,6 +543,8 @@ class Report(object):
                     ((self._sum_detail_ht // self.rownumber) + self._max_detail_ht) // 2
                 if (self.current_offset + elementlist[0]) >= self.endofpage:
                     self.newpage(canvas, row)
+                if self.ondetail:
+                    self.ondetail(self)
                 self.current_offset += self.addtopage(canvas, elementlist)
                 for aband in self.detailband.additionalbands:
                     elementlist = aband.generate(row)
@@ -567,6 +581,10 @@ class Report(object):
                     if (self.current_offset + elementlist[0]) >= self.endofpage:
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
+
+        if self.footerelementlist:
+            for el in self.footerelementlist[1:]:
+                el.render(self.endofpage, canvas)
 
         canvas.showPage()
 
