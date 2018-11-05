@@ -89,7 +89,8 @@ class Renderer(object):
                 if curline:
                     lines.append(" ".join(curline))
                     curline = []
-            self.lines = lines
+                lines.append(" ")
+            self.lines = lines[:-1]
 
         self.height = height * len(self.lines)
 
@@ -315,7 +316,7 @@ class Band(object):
 
     def __init__(self, elements = None, childbands = None,
                  additionalbands = None, key = None, getvalue = None,
-                 newpagebefore = 0, newpageafter = 0):
+                 newpagebefore = 0, newpageafter = 0, hidden = 0):
         self.elements = elements
         self.key = key
         self._getvalue = getvalue
@@ -324,6 +325,7 @@ class Band(object):
         self.newpageafter = newpageafter
         self.childbands = childbands or []
         self.additionalbands = additionalbands or []
+        self.hidden = hidden
 
     # generating a band creates a list of Renderer objects.
     # the first element of the list is a single integer
@@ -334,14 +336,16 @@ class Band(object):
         elementlist = [ 0 ]
         for element in self.elements:
             renderer = element.generate(row)
-            elementlist[0] = max(elementlist[0], renderer.height + renderer.pos[1])
-            elementlist.append(renderer)
+            if not self.hidden:
+                elementlist[0] = max(elementlist[0], renderer.height + renderer.pos[1])
+                elementlist.append(renderer)
         for band in self.childbands:
             childlist = band.generate(row)
-            for renderer in childlist[1:]:
-                renderer.applyoffset(elementlist[0])
-                elementlist.append(renderer)
-            elementlist[0] += childlist[0]
+            if not self.hidden:
+                for renderer in childlist[1:]:
+                    renderer.applyoffset(elementlist[0])
+                    elementlist.append(renderer)
+                elementlist[0] += childlist[0]
         return elementlist
 
     # summarize() is only used for total bands, i.e. group and
