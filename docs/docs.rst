@@ -158,7 +158,8 @@ class Report
 class Band
 ----------
 
-    ``band = Band(elements, childbands, key, getvalue, newpagebefore = 0, newpageafter = 0)``
+    ``band = Band(elements, childbands = None, additionalbands = None, key = None,
+    getvalue = None, newpagebefore = 0, newpageafter = 0, hidden = 0, getrows = None)``
 
     *elements* is a list of Element (or Element-like) objects which define what
     data from the row to print, and how to print it.  See Element, below, for
@@ -169,6 +170,18 @@ class Band
     parent has an Element which renders at different heights, the Elements in
     the child band(s) will not overwrite it.
     
+    *additionalbands* are very similar to child bands, in that they are
+    rendered following the parent band.  There are two significant differences,
+    however.  First, additionalbands are separate from the parent band, and may
+    be pushed to the next page, rather than being "glued on" to the parent.
+    Second, additionalbands may have an additional parameter, getrows, which
+    must be a function returning a sequence of row-like objects (i.e. dicts or
+    lists).  If getrows is provided, each time the additionalband is to be
+    rendered getrows() will be called with a single parameter, the current data
+    source row.  The sequence returned by getrows() is then iterated over and
+    the band is generated once for each row in the sequence.  This provides a
+    kind of lightweight subreport functionality.
+
     *getvalue* is a function which accepts one parameter, the row, and returns
     an item of data.  This permits calculations or modifications of the data
     before use.  If getvalue is not provided, key is used.  If neither key nor
@@ -184,6 +197,16 @@ class Band
     be started at the indicated time.  Neither apply to detail bands, page
     headers, or page footers, and newpageafter also does not apply to the
     report footer.
+
+    *hidden* is a logical variable that determines whether or not the Band will
+    be added to the canvas (i.e. printed).  This parameter is used when
+    functions need to be called during Band.generate() but the results should
+    not appear on the page.
+
+    *getrows* is a function which accepts the current data source row as a
+    parameter and returns a sequence of row-like objects.  It is evaluated only
+    for Bands that are part of another Band's additionalbands list.  See
+    additionalbands, above, for an explanation of how this is used.
 
     **Methods** and **Attributes**
 
@@ -205,8 +228,8 @@ class Element
     *pos* is a tuple of (x, y) defining the location relative to the top left
     corner of the band where the Element will be rendered.
 
-    *fonts* is a tuple of (fontname, fontsize) defining the font to be used
-    when rendering the Element.
+    *font* is a tuple of (fontname, fontsize) defining the font to be used when
+    rendering the Element.
 
     *getvalue* is a function which accepts one parameter, the row, and returns an
     item of data.  This permits calculations or modifications of the data before use.
