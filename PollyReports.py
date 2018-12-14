@@ -316,7 +316,8 @@ class Band(object):
 
     def __init__(self, elements = None, childbands = None,
                  additionalbands = None, key = None, getvalue = None,
-                 newpagebefore = 0, newpageafter = 0, hidden = 0):
+                 newpagebefore = 0, newpageafter = 0, hidden = 0,
+                 getrows = None):
         self.elements = elements
         self.key = key
         self._getvalue = getvalue
@@ -326,6 +327,7 @@ class Band(object):
         self.childbands = childbands or []
         self.additionalbands = additionalbands or []
         self.hidden = hidden
+        self.getrows = getrows
 
     # generating a band creates a list of Renderer objects.
     # the first element of the list is a single integer
@@ -493,10 +495,15 @@ class Report(object):
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     for aband in band.additionalbands:
-                        elementlist = aband.generate(row)
-                        if (self.current_offset + elementlist[0]) >= self.endofpage:
-                            self.newpage(canvas, row)
-                        self.current_offset += self.addtopage(canvas, elementlist)
+                        if aband.getrows:
+                            abandrows = aband.getrows(row)
+                        else:
+                            abandrows = [ row ]
+                        for abandrow in abandrows:
+                            elementlist = aband.generate(abandrow)
+                            if (self.current_offset + elementlist[0]) >= self.endofpage:
+                                self.newpage(canvas, row)
+                            self.current_offset += self.addtopage(canvas, elementlist)
 
             lastchanged = None
             for i in range(len(self.groupfooters)):
@@ -510,10 +517,15 @@ class Report(object):
                         self.newpage(canvas, prevrow)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     for aband in self.groupfooters[i].additionalbands:
-                        elementlist = aband.generate(row)
-                        if (self.current_offset + elementlist[0]) >= self.endofpage:
-                            self.newpage(canvas, row)
-                        self.current_offset += self.addtopage(canvas, elementlist)
+                        if aband.getrows:
+                            abandrows = aband.getrows(row)
+                        else:
+                            abandrows = [ row ]
+                        for abandrow in abandrows:
+                            elementlist = aband.generate(abandrow)
+                            if (self.current_offset + elementlist[0]) >= self.endofpage:
+                                self.newpage(canvas, row)
+                            self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupfooters[i].newpageafter:
                         self.current_offset = self.pagesize[1]
             for band in self.groupfooters:
@@ -532,10 +544,15 @@ class Report(object):
                         self.newpage(canvas, row)
                     self.current_offset += self.addtopage(canvas, elementlist)
                     for aband in self.groupheaders[i].additionalbands:
-                        elementlist = aband.generate(row)
-                        if (self.current_offset + elementlist[0]) >= self.endofpage:
-                            self.newpage(canvas, row)
-                        self.current_offset += self.addtopage(canvas, elementlist)
+                        if aband.getrows:
+                            abandrows = aband.getrows(row)
+                        else:
+                            abandrows = [ row ]
+                        for abandrow in abandrows:
+                            elementlist = aband.generate(abandrow)
+                            if (self.current_offset + elementlist[0]) >= self.endofpage:
+                                self.newpage(canvas, row)
+                            self.current_offset += self.addtopage(canvas, elementlist)
                     if self.groupheaders[i].newpageafter:
                         self.current_offset = self.pagesize[1]
 
@@ -551,10 +568,15 @@ class Report(object):
                     self.ondetail(self)
                 self.current_offset += self.addtopage(canvas, elementlist)
                 for aband in self.detailband.additionalbands:
-                    elementlist = aband.generate(row)
-                    if (self.current_offset + elementlist[0]) >= self.endofpage:
-                        self.newpage(canvas, row)
-                    self.current_offset += self.addtopage(canvas, elementlist)
+                    if aband.getrows:
+                        abandrows = aband.getrows(row)
+                    else:
+                        abandrows = [ row ]
+                    for abandrow in abandrows:
+                        elementlist = aband.generate(abandrow)
+                        if (self.current_offset + elementlist[0]) >= self.endofpage:
+                            self.newpage(canvas, row)
+                        self.current_offset += self.addtopage(canvas, elementlist)
 
             if self.reportfooter:
                 self.reportfooter.summarize(row)
@@ -568,10 +590,15 @@ class Report(object):
                     self.newpage(canvas, row)
                 self.current_offset += self.addtopage(canvas, elementlist)
                 for aband in band.additionalbands:
-                    elementlist = aband.generate(row)
-                    if (self.current_offset + elementlist[0]) >= self.endofpage:
-                        self.newpage(canvas, row)
-                    self.current_offset += self.addtopage(canvas, elementlist)
+                    if aband.getrows:
+                        abandrows = aband.getrows(row)
+                    else:
+                        abandrows = [ row ]
+                    for abandrow in abandrows:
+                        elementlist = aband.generate(abandrow)
+                        if (self.current_offset + elementlist[0]) >= self.endofpage:
+                            self.newpage(canvas, row)
+                        self.current_offset += self.addtopage(canvas, elementlist)
                 if band.newpageafter:
                     self.current_offset = self.pagesize[1]
 
@@ -581,10 +608,15 @@ class Report(object):
                     self.newpage(canvas, row)
                 self.current_offset += self.addtopage(canvas, elementlist)
                 for aband in self.reportfooter.additionalbands:
-                    elementlist = aband.generate(row)
-                    if (self.current_offset + elementlist[0]) >= self.endofpage:
-                        self.newpage(canvas, row)
-                    self.current_offset += self.addtopage(canvas, elementlist)
+                    if aband.getrows:
+                        abandrows = aband.getrows(row)
+                    else:
+                        abandrows = [ row ]
+                    for abandrow in abandrows:
+                        elementlist = aband.generate(abandrow)
+                        if (self.current_offset + elementlist[0]) >= self.endofpage:
+                            self.newpage(canvas, row)
+                        self.current_offset += self.addtopage(canvas, elementlist)
 
         if self.footerelementlist:
             for el in self.footerelementlist[1:]:
